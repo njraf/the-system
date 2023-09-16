@@ -54,10 +54,8 @@ bool isValidSocket(SOCKET sock) {
 	return (INVALID_SOCKET != sock);
 }
 
-struct sockaddr_in makeSockaddr(ADDRESS_FAMILY family, const char *address, USHORT port) {
-	struct sockaddr_in addr;
+int makeSockaddr(struct sockaddr_in &addr, ADDRESS_FAMILY family, const char *address, USHORT port) {
 	addr.sin_family = family;
 	addr.sin_port = port;
-	inet_pton(family, address, &(addr.sin_addr.s_addr));
-	return addr;
+	return inet_pton(family, address, &(addr.sin_addr.s_addr));
 }

@@ -21,6 +21,7 @@
 #include <errno.h>
 #define SOCKET int
 #define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 #endif
 
 SOCKET createSocket(int domain, int type, int protocol);
@@ -33,4 +34,4 @@ void printErrorText(int error);
 
 bool isValidSocket(SOCKET sock);
 
-struct sockaddr_in makeSockaddr(ADDRESS_FAMILY family, const char *address, USHORT port);
+int makeSockaddr(struct sockaddr_in &addr, ADDRESS_FAMILY family, const char *address, USHORT port);
