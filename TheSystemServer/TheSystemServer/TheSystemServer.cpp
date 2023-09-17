@@ -12,6 +12,7 @@ sockets:
 #include <string>
 
 #include "sockets.h"
+#include "DatabaseManager.h"
 
 const std::string LOAD_BALANCER_IP = "127.0.0.1";
 const int LOAD_BALANCER_PORT = 3576;
@@ -19,6 +20,23 @@ volatile bool isRunning = true;
 
 int main() {
     
+    // connect to the database
+    std::shared_ptr<DatabaseManager> dbm;
+    try {
+        dbm = std::make_shared<DatabaseManager>("127.0.0.1", 33060, "", "", "the_system");
+    } catch (std::exception e) {
+        std::cout << ">>>" << e.what() << std::endl;
+        return 1;
+    }
+    
+    for (std::string asd : dbm->getSchema().getTableNames()) {
+        // print table names
+        //std::cout << asd << std::endl;
+    }
+    mysqlx::Table users = dbm->getSchema().getTable("users");
+    dbm->printTable(users);
+    
+
     // connect to load balancer over TCP
     SOCKET sock = createSocket(AF_INET, SOCK_STREAM, 0);
     if (!isValidSocket(sock)) {
@@ -45,6 +63,8 @@ int main() {
         closeSocket(sock);
         return 1;
     }
+
+    
 
     while (isRunning) {
         // wait for requests
