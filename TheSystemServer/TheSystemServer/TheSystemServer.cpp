@@ -10,24 +10,44 @@ sockets:
 */
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include "sockets.h"
 #include "DatabaseManager.h"
 
+const std::string DATABASE_IP = "127.0.0.1";
 const std::string LOAD_BALANCER_IP = "127.0.0.1";
 const int LOAD_BALANCER_PORT = 3576;
 volatile bool isRunning = true;
 
 int main() {
+
+    // read database username and password from a file
+    constexpr int FILE_BUFFER_SIZE = 64;
+    char dbUsername[FILE_BUFFER_SIZE];
+    char dbPassword[FILE_BUFFER_SIZE];
+    std::ifstream file;
+
+    file.open("credentials.txt", std::ifstream::in);
+    if (!file.is_open()) {
+        std::cout << "Could not open the credentials file" << std::endl;
+        return 1;
+    }
+
+    file.getline(dbUsername, FILE_BUFFER_SIZE - 1);
+    file.getline(dbPassword, FILE_BUFFER_SIZE - 1);
+    file.close();
     
     // connect to the database
     std::shared_ptr<DatabaseManager> dbm;
     try {
-        dbm = std::make_shared<DatabaseManager>("127.0.0.1", 33060, "", "", "the_system");
+        dbm = std::make_shared<DatabaseManager>(DATABASE_IP, 33060, std::string(dbUsername), std::string(dbPassword), "the_system");
     } catch (std::exception e) {
         std::cout << ">>>" << e.what() << std::endl;
         return 1;
     }
+    memset(dbUsername, 0, FILE_BUFFER_SIZE);
+    memset(dbPassword, 0, FILE_BUFFER_SIZE);
     
     for (std::string asd : dbm->getSchema().getTableNames()) {
         // print table names

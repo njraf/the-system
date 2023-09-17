@@ -13,6 +13,8 @@ Dependencies:
 	- https://dev.mysql.com/downloads/connector/cpp/
 	- Windows file path C:\Program Files\MySQL\mysql-connector-c++-8.1.0-winx64
 	- Linux compile options: -I /path/to/connector/include -L /path/to/connector/lib64 -lmysqlcppconn8
+	- add mysqlcppconn8-2-vs14.dll alongside source files (or the executable if the project is deployed) to use the api
+	- create a file alongside source files (or the executable if the project is deployed) called credentials.txt with the username on the first line and password on the second line
 	
 [Load Balancer]
 - none
