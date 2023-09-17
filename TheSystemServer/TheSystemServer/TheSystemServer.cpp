@@ -11,6 +11,7 @@ sockets:
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <signal.h>
 
 #include "sockets.h"
 #include "DatabaseManager.h"
@@ -20,7 +21,17 @@ const std::string LOAD_BALANCER_IP = "127.0.0.1";
 const int LOAD_BALANCER_PORT = 3576;
 volatile bool isRunning = true;
 
+void signalHandler(int signal) {
+    std::cout << "Handling signal" << std::endl;
+    isRunning = false;
+}
+
 int main() {
+
+    if (SIG_ERR == signal(SIGINT, signalHandler)) {
+        std::cout << "Failed to set signal handler" << std::endl;
+        return 1;
+    }
 
     // read database username and password from a file
     constexpr int FILE_BUFFER_SIZE = 64;
@@ -111,7 +122,7 @@ int main() {
         FD_SET(sock, &readSet);
 
         struct timeval tv;
-        tv.tv_sec = 10;
+        tv.tv_sec = 5;
         tv.tv_usec = 0;
 
         int ret = select(sock + 1, &readSet, nullptr, nullptr, &tv);
@@ -119,7 +130,7 @@ int main() {
             std::cout << "Select error" << std::endl;
             continue;
         } else if (0 == ret) {
-            std::cout << "Select timeout" << std::endl;
+            //std::cout << "Select timeout" << std::endl;
             continue;
         } else if (!FD_ISSET(sock, &readSet)) {
             std::cout << "Socket not selected" << std::endl;

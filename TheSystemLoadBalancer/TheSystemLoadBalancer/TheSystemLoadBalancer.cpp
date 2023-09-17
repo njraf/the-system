@@ -3,16 +3,27 @@
 #include <vector>
 #include <thread>
 #include <utility> // std::pair
+#include <signal.h>
 
 #include "sockets.h"
 
 volatile bool isRunning = true;
 std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
 
+void signalHandler(int signal) {
+	std::cout << "Handling signal" << std::endl;
+	isRunning = false;
+}
+
 int main() {
 
+	if (SIG_ERR == signal(SIGINT, signalHandler)) {
+		std::cout << "Failed to set signal handler" << std::endl;
+		return 1;
+	}
+
 	const std::string LOAD_BALANCER_IP = "127.0.0.1";
-	const int LOAD_BALANCER_PORT = 4136;
+	const int LOAD_BALANCER_PORT = 3576;
 
 	// connect to load balancer over TCP
 	SOCKET sock = createSocket(AF_INET, SOCK_STREAM, 0);
@@ -67,9 +78,30 @@ int main() {
 		struct sockaddr_storage theirAddr;
 		int theirSize = sizeof(theirAddr);
 
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(sock, &readSet);
+
+		struct timeval tv;
+		tv.tv_sec = 5;
+		tv.tv_usec = 0;
+		int ret = select(sock + 1, &readSet, nullptr, nullptr, &tv);
+		if (-1 == ret) {
+			// error
+			std::cout << "Select error" << std::endl;
+			continue;
+		} else if (0 == ret) {
+			// timeout
+			continue;
+		} else if (!FD_ISSET(sock, &readSet)) {
+			std::cout << "Socket not selected" << std::endl;
+			continue;
+		}
+
 		// wait for requests
 		SOCKET newSocket = accept(sock, (struct sockaddr *)&theirAddr, &theirSize);
 		if (INVALID_SOCKET == newSocket) {
+			std::cout << "Client accept failed" << std::endl;
 			continue;
 		}
 
@@ -82,6 +114,9 @@ int main() {
 
 
 	closeSocket(sock);
+	for (const auto &sp : serverSockets) {
+		closesocket(sp.first);
+	}
 
 #if defined(_WIN32)
 	WSACleanup();
