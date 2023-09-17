@@ -10,9 +10,77 @@
 volatile bool isRunning = true;
 std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
 
+const long SELECT_TIMEOUT_SEC = 5;
+const std::string LOAD_BALANCER_IP = "127.0.0.1";
+const int SERVER_PORT = 3576;
+const int CLIENT_PORT = 3577;
+
 void signalHandler(int signal) {
-	std::cout << "Handling signal" << std::endl;
+	std::cout << "Handling signal. Wait for at most " << SELECT_TIMEOUT_SEC << " seconds" << std::endl;
 	isRunning = false;
+}
+
+bool createServerSocket(SOCKET &serverSocket) {
+	// listen for servers trying to connect over TCP
+	serverSocket = createSocket(AF_INET, SOCK_STREAM, 0);
+	if (!isValidSocket(serverSocket)) {
+		std::cout << "Failed to create the server socket" << std::endl;
+		return false;
+	}
+
+	struct sockaddr_in addr;
+	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), SERVER_PORT)) {
+	case -1:
+		std::cout << "Failed to make sockaddr_in for the server socket" << std::endl;
+		return false;
+	case 0:
+		std::cout << "Invalid IP address for the server socket" << std::endl;
+		return false;
+	case 1:
+	default:
+		break;
+	}
+
+	if (SOCKET_ERROR == bind(serverSocket, (struct sockaddr *)&addr, sizeof(addr))) {
+		std::cout << "Failed to bind the server socket" << std::endl;
+		return false;
+	}
+
+	if (SOCKET_ERROR == listen(serverSocket, 10)) {
+		std::cout << "Failed to listen on the server socket" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool createClientSocket(SOCKET &clientSocket) {
+	// communicate with clients over UDP
+	clientSocket = createSocket(AF_INET, SOCK_DGRAM, 0);
+	if (!isValidSocket(clientSocket)) {
+		std::cout << "Failed to create the client socket" << std::endl;
+		return false;
+	}
+
+	struct sockaddr_in addr;
+	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), CLIENT_PORT)) {
+	case -1:
+		std::cout << "Failed to make sockaddr_in for the client socket" << std::endl;
+		return false;
+	case 0:
+		std::cout << "Invalid IP address" << std::endl;
+		return false;
+	case 1:
+	default:
+		break;
+	}
+
+	if (SOCKET_ERROR == bind(clientSocket, (struct sockaddr *)&addr, sizeof(addr))) {
+		std::cout << "Failed to bind the client socket" << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 int main() {
@@ -22,57 +90,28 @@ int main() {
 		return 1;
 	}
 
-	const std::string LOAD_BALANCER_IP = "127.0.0.1";
-	const int LOAD_BALANCER_PORT = 3576;
 
-	// connect to load balancer over TCP
-	SOCKET sock = createSocket(AF_INET, SOCK_STREAM, 0);
-	if (!isValidSocket(sock)) {
-		std::cout << "Failed to create the socket" << std::endl;
+	SOCKET serverSocket;
+	if (!createServerSocket(serverSocket)) {
+		closeSocket(serverSocket);
 #if defined(_WIN32)
 		WSACleanup();
 #endif
 		return 1;
 	}
 
-	struct sockaddr_in addr;
-	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), LOAD_BALANCER_PORT)) {
-	case -1:
-		std::cout << "Failed to make sockaddr_in" << std::endl;
-		closeSocket(sock);
-#if defined(_WIN32)
-		WSACleanup();
-#endif
-		return 1;
-	case 0:
-		std::cout << "Invalid IP address" << std::endl;
-#if defined(_WIN32)
-		WSACleanup();
-#endif
-		return 1;
-	case 1:
-	default:
-		break;
-	}
 
-	if (SOCKET_ERROR == bind(sock, (struct sockaddr *)&addr, sizeof(addr))) {
-		std::cout << "Failed to bind the socket" << std::endl;
-		closeSocket(sock);
+	SOCKET clientSocket;
+	if (!createClientSocket(clientSocket)) {
+		closeSocket(serverSocket);
+		closeSocket(clientSocket);
 #if defined(_WIN32)
 		WSACleanup();
 #endif
 		return 1;
 	}
 
-	if (SOCKET_ERROR == listen(sock, 10)) {
-		std::cout << "Failed to listen on the socket" << std::endl;
-		closeSocket(sock);
-#if defined(_WIN32)
-		WSACleanup();
-#endif
-		return 1;
-	}
-
+	SOCKET maxFD = clientSocket;
 
 	while (isRunning) {
 		struct sockaddr_storage theirAddr;
@@ -80,12 +119,15 @@ int main() {
 
 		fd_set readSet;
 		FD_ZERO(&readSet);
-		FD_SET(sock, &readSet);
+		FD_SET(serverSocket, &readSet);
+		for (const auto &sp : serverSockets) {
+			FD_SET(sp.first, &readSet);
+		}
 
 		struct timeval tv;
-		tv.tv_sec = 5;
+		tv.tv_sec = SELECT_TIMEOUT_SEC;
 		tv.tv_usec = 0;
-		int ret = select(sock + 1, &readSet, nullptr, nullptr, &tv);
+		int ret = select(maxFD + 1, &readSet, nullptr, nullptr, &tv);
 		if (-1 == ret) {
 			// error
 			std::cout << "Select error" << std::endl;
@@ -93,27 +135,35 @@ int main() {
 		} else if (0 == ret) {
 			// timeout
 			continue;
-		} else if (!FD_ISSET(sock, &readSet)) {
-			std::cout << "Socket not selected" << std::endl;
-			continue;
+		} else if (FD_ISSET(serverSocket, &readSet)) {
+			// accept connections
+			SOCKET newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
+			if (INVALID_SOCKET == newSocket) {
+				std::cout << "Client accept failed" << std::endl;
+				continue;
+			}
+
+			serverSockets.push_back(std::make_pair(newSocket, theirAddr));
+			maxFD = newSocket;
+		} else if (FD_ISSET(clientSocket, &readSet)) {
+			//TODO
+		} else {
+			for (const auto &sp : serverSockets) {
+				if (FD_ISSET(sp.first, &readSet)) {
+					//TODO
+				}
+			}
 		}
 
-		// wait for requests
-		SOCKET newSocket = accept(sock, (struct sockaddr *)&theirAddr, &theirSize);
-		if (INVALID_SOCKET == newSocket) {
-			std::cout << "Client accept failed" << std::endl;
-			continue;
-		}
-
-		serverSockets.push_back(std::make_pair(newSocket, theirAddr));
-
+		
 
 
 	}
 
 
 
-	closeSocket(sock);
+	closeSocket(serverSocket);
+	closeSocket(clientSocket);
 	for (const auto &sp : serverSockets) {
 		closesocket(sp.first);
 	}

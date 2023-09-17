@@ -16,13 +16,14 @@ sockets:
 #include "sockets.h"
 #include "DatabaseManager.h"
 
+const long SELECT_TIMEOUT_SEC = 5;
 const std::string DATABASE_IP = "127.0.0.1";
 const std::string LOAD_BALANCER_IP = "127.0.0.1";
 const int LOAD_BALANCER_PORT = 3576;
 volatile bool isRunning = true;
 
 void signalHandler(int signal) {
-    std::cout << "Handling signal" << std::endl;
+    std::cout << "Handling signal. Wait for at most " << SELECT_TIMEOUT_SEC << " seconds" << std::endl;
     isRunning = false;
 }
 
@@ -122,7 +123,7 @@ int main() {
         FD_SET(sock, &readSet);
 
         struct timeval tv;
-        tv.tv_sec = 5;
+        tv.tv_sec = SELECT_TIMEOUT_SEC;
         tv.tv_usec = 0;
 
         int ret = select(sock + 1, &readSet, nullptr, nullptr, &tv);
