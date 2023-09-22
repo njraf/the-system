@@ -10,14 +10,23 @@
 volatile bool isRunning = true;
 std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
 
-const long SELECT_TIMEOUT_SEC = 5;
+const long SELECT_TIMEOUT_SEC = 1;
 const std::string LOAD_BALANCER_IP = "127.0.0.1";
-const int SERVER_PORT = 3576;
-const int CLIENT_PORT = 3577;
+const int RESPONSE_TX_PORT = 3576; // SEND to client
+const int RESPONSE_RX_PORT = 3577; // RECV from server
+const int REQUEST_TX_PORT = 3578;  // SEND to server
+const int REQUEST_RX_PORT = 3579;  // RECV from client
 
 void signalHandler(int signal) {
-	std::cout << "Handling signal. Wait for at most " << SELECT_TIMEOUT_SEC << " seconds" << std::endl;
+	std::cout << "Handling signal. Wait up to " << SELECT_TIMEOUT_SEC << " seconds to finish." << std::endl;
 	isRunning = false;
+}
+
+void cleanup() {
+	isRunning = false;
+#if defined(_WIN32)
+	WSACleanup();
+#endif
 }
 
 bool createServerSocket(SOCKET &serverSocket) {
@@ -29,7 +38,7 @@ bool createServerSocket(SOCKET &serverSocket) {
 	}
 
 	struct sockaddr_in addr;
-	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), SERVER_PORT)) {
+	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), RESPONSE_RX_PORT)) {
 	case -1:
 		std::cout << "Failed to make sockaddr_in for the server socket" << std::endl;
 		return false;
@@ -63,7 +72,7 @@ bool createClientSocket(SOCKET &clientSocket) {
 	}
 
 	struct sockaddr_in addr;
-	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), CLIENT_PORT)) {
+	switch (makeSockaddr(addr, AF_INET, LOAD_BALANCER_IP.c_str(), REQUEST_RX_PORT)) {
 	case -1:
 		std::cout << "Failed to make sockaddr_in for the client socket" << std::endl;
 		return false;
@@ -94,9 +103,7 @@ int main() {
 	SOCKET serverSocket;
 	if (!createServerSocket(serverSocket)) {
 		closeSocket(serverSocket);
-#if defined(_WIN32)
-		WSACleanup();
-#endif
+		cleanup();
 		return 1;
 	}
 
@@ -105,24 +112,19 @@ int main() {
 	if (!createClientSocket(clientSocket)) {
 		closeSocket(serverSocket);
 		closeSocket(clientSocket);
-#if defined(_WIN32)
-		WSACleanup();
-#endif
+		cleanup();
 		return 1;
 	}
 
 	SOCKET maxFD = clientSocket;
 
-	while (isRunning) {
-		struct sockaddr_storage theirAddr;
-		int theirSize = sizeof(theirAddr);
+	fd_set mainSet;
+	FD_ZERO(&mainSet);
+	FD_SET(serverSocket, &mainSet);
+	FD_SET(clientSocket, &mainSet);
 
-		fd_set readSet;
-		FD_ZERO(&readSet);
-		FD_SET(serverSocket, &readSet);
-		for (const auto &sp : serverSockets) {
-			FD_SET(sp.first, &readSet);
-		}
+	while (isRunning) {
+		fd_set readSet = mainSet;
 
 		struct timeval tv;
 		tv.tv_sec = SELECT_TIMEOUT_SEC;
@@ -137,20 +139,38 @@ int main() {
 			continue;
 		} else if (FD_ISSET(serverSocket, &readSet)) {
 			// accept connections
+			struct sockaddr_storage theirAddr;
+			int theirSize = sizeof(theirAddr);
 			SOCKET newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
 			if (INVALID_SOCKET == newSocket) {
-				std::cout << "Client accept failed" << std::endl;
+				std::cout << "Server accept failed" << std::endl;
 				continue;
 			}
 
 			serverSockets.push_back(std::make_pair(newSocket, theirAddr));
+			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
 		} else if (FD_ISSET(clientSocket, &readSet)) {
-			//TODO
+			//TODO: request from client
+			std::cout << "Receiving message from client" << std::endl;
+			char buff[64] = "";
+			int len = 0;
+			if (SOCKET_ERROR == recv(clientSocket, buff, len, 0)) {
+				std::cout << "Failed to receive client packet" << std::endl;
+				continue;
+			}
+			printf("Message received: %s\n", buff);
+
+			//TODO: determine which server to send to
+
+
+			//TODO: send to selected server
+
 		} else {
+			std::cout << "Receiving messages from servers" << std::endl;
 			for (const auto &sp : serverSockets) {
 				if (FD_ISSET(sp.first, &readSet)) {
-					//TODO
+					//TODO: response from servers
 				}
 			}
 		}
@@ -168,9 +188,7 @@ int main() {
 		closesocket(sp.first);
 	}
 
-#if defined(_WIN32)
-	WSACleanup();
-#endif
+	cleanup();
 
 	return 0;
 }
