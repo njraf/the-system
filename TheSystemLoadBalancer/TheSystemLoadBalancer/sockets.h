@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string.h>
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
@@ -22,6 +23,8 @@
 #define SOCKET int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
+#deifne USHORT unsigned short
+#deifne ADDRESS_FAMILY unsigned short
 #endif
 
 SOCKET createSocket(int domain, int type, int protocol);

@@ -140,7 +140,7 @@ int main() {
 		} else if (FD_ISSET(serverSocket, &readSet)) {
 			// accept connections
 			struct sockaddr_storage theirAddr;
-			int theirSize = sizeof(theirAddr);
+			socklen_t theirSize = sizeof(theirAddr);
 			SOCKET newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
 			if (INVALID_SOCKET == newSocket) {
 				std::cout << "Server accept failed" << std::endl;
@@ -185,7 +185,7 @@ int main() {
 	closeSocket(serverSocket);
 	closeSocket(clientSocket);
 	for (const auto &sp : serverSockets) {
-		closesocket(sp.first);
+		closeSocket(sp.first);
 	}
 
 	cleanup();
