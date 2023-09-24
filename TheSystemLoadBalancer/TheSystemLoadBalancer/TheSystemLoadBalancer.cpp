@@ -154,8 +154,7 @@ int main() {
 			//TODO: request from client
 			std::cout << "Receiving message from client" << std::endl;
 			char buff[64] = "";
-			int len = 0;
-			if (SOCKET_ERROR == recv(clientSocket, buff, len, 0)) {
+			if (SOCKET_ERROR == recv(clientSocket, buff, sizeof(buff), 0)) {
 				std::cout << "Failed to receive client packet" << std::endl;
 				continue;
 			}

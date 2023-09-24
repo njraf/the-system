@@ -19,31 +19,11 @@ public:
     void sendTestPacket();
     void readTestPacket();
 
-    void removeStoppedThreads(); // stopped means finished
-
 private:
-    class SocketManager : public QThread
-    {
-    public:
-        SocketManager(QUdpSocket *sock);
-        ~SocketManager();
-
-
-
-    protected:
-        void run();
-
-    private:
-        QUdpSocket *sock;
-    };
-
     QHostAddress loadBalancerHost;
     const int REQUEST_TX_PORT = 3579;  // SEND to load balancer
-    const int RESPONSE_RX_PORT = 3579; // RECV from load balancer
+    const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
     QUdpSocket *sock;
-
-    std::vector<SocketManager*> socketManagers;
-
 
 
 signals:
