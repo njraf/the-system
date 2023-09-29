@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+#include <QFile>
+#include <QStringList>
+
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -14,9 +17,27 @@ PacketManager::PacketManager(QObject *parent)
     : QObject(parent)
     , sock(new QUdpSocket())
 {
+    // get IP addresses of the load balancer and this client
+    QFile file("../../addresses.csv");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to set IP addresses";
+        return;
+    }
+
+    while (!file.atEnd()) {
+        const QStringList line = QString(file.readLine().toStdString().c_str()).split(',');
+        if (line[0] == "load_balancer") {
+            qDebug() << "Setting Load Balancer IP address to" << line[1].trimmed();
+            loadBalancerHost = QHostAddress(line[1].trimmed());
+        } else if (line[0] == "desktop_client") {
+            qDebug() << "Setting own IP address to" << line[1].trimmed();
+            desktopClientHost = QHostAddress(line[1].trimmed());
+        }
+    }
+    file.close();
+
     QObject::connect(sock, &QUdpSocket::readyRead, this, &PacketManager::readTestPacket);
     sock->bind(QHostAddress::Any, RESPONSE_RX_PORT);
-    loadBalancerHost = QHostAddress("127.0.0.1");
 }
 
 PacketManager::~PacketManager() {

@@ -4,6 +4,9 @@
 #include <thread>
 #include <utility> // std::pair
 #include <signal.h>
+#include <fstream>
+#include <string>
+#include <algorithm>
 
 #include "sockets.h"
 
@@ -11,7 +14,7 @@ volatile bool isRunning = true;
 std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
 
 const long SELECT_TIMEOUT_SEC = 1;
-const std::string LOAD_BALANCER_IP = "127.0.0.1";
+std::string LOAD_BALANCER_IP = "127.0.0.1";
 const int RESPONSE_TX_PORT = 3576; // SEND to client
 const int RESPONSE_RX_PORT = 3577; // RECV from server
 const int REQUEST_TX_PORT = 3578;  // SEND to server
@@ -27,6 +30,33 @@ void cleanup() {
 #if defined(_WIN32)
 	WSACleanup();
 #endif
+}
+
+bool loadAddresses() {
+	std::ifstream file;
+	file.open("../../addresses.csv");
+	if (!file.is_open()) {
+		return false;
+	}
+
+	std::string line = "";
+	const std::string delimiter = ",";
+	while (std::getline(file, line)) {
+		if (line.substr(0, line.find(delimiter)) == "load_balancer") {
+			line.erase(0, line.find(delimiter) + delimiter.length()); // erase the first entry in the delimited string
+			LOAD_BALANCER_IP = line.substr(0, line.find(delimiter));
+
+			// trim whitespace from the right (especially CRLF)
+			LOAD_BALANCER_IP.erase(std::find_if(LOAD_BALANCER_IP.rbegin(), LOAD_BALANCER_IP.rend(), [](unsigned char ch) {
+				return !std::isspace(ch);
+				}).base(), LOAD_BALANCER_IP.end());
+			std::cout << "Setting own IP address to " << LOAD_BALANCER_IP << std::endl;
+			break;
+		}
+	}
+
+	file.close();
+	return true;
 }
 
 bool createServerSocket(SOCKET &serverSocket) {
@@ -96,6 +126,11 @@ int main() {
 
 	if (SIG_ERR == signal(SIGINT, signalHandler)) {
 		std::cout << "Failed to set signal handler" << std::endl;
+		return 1;
+	}
+
+	if (!loadAddresses()) {
+		std::cout << "Failed to set IP addresses" << std::endl;
 		return 1;
 	}
 

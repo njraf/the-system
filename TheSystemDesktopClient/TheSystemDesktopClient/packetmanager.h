@@ -21,6 +21,7 @@ public:
 
 private:
     QHostAddress loadBalancerHost;
+    QHostAddress desktopClientHost;
     const int REQUEST_TX_PORT = 3579;  // SEND to load balancer
     const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
     QUdpSocket *sock;
