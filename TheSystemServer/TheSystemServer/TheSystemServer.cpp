@@ -195,6 +195,7 @@ int main() {
         }
 
         std::cout << "Receiving message: " << buff << std::endl;
+        send(sock, buff, strlen(buff), 0);
 
         // parse packets
 

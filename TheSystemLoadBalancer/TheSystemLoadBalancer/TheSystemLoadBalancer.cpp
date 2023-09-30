@@ -224,6 +224,17 @@ int main() {
 			for (const auto &sp : serverSockets) {
 				if (FD_ISSET(sp.first, &readSet)) {
 					//TODO: response from servers
+					char buff[64] = "";
+					int bytesRead = recv(sp.first, buff, sizeof(buff), 0);
+					if (-1 == bytesRead) {
+						std::cout << "Failed to read from a server" << std::endl;
+					} else if (0 == bytesRead) {
+						//TODO: resolve disconnected server
+						std::cout << "Server disconnected" << std::endl;
+					} else {
+						std::cout << "Server message: " << buff << std::endl;
+					}
+
 				}
 			}
 		}
