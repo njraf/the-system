@@ -15,6 +15,7 @@ std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
 
 const long SELECT_TIMEOUT_SEC = 1;
 std::string LOAD_BALANCER_IP = "127.0.0.1";
+std::string SERVER_IP = "127.0.0.1";
 const int RESPONSE_TX_PORT = 3576; // SEND to client
 const int RESPONSE_RX_PORT = 3577; // RECV from server
 const int REQUEST_TX_PORT = 3578;  // SEND to server
@@ -180,11 +181,16 @@ int main() {
 			if (INVALID_SOCKET == newSocket) {
 				std::cout << "Server accept failed" << std::endl;
 				continue;
+			} else {
+				std::cout << "New server accepted" << std::endl;
 			}
 
 			serverSockets.push_back(std::make_pair(newSocket, theirAddr));
 			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
+
+			char buff[64] = "The message";
+			send(newSocket, buff, strlen(buff), 0);
 		} else if (FD_ISSET(clientSocket, &readSet)) {
 			//TODO: request from client
 			struct sockaddr_in from;
