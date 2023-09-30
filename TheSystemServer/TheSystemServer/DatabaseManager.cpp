@@ -10,7 +10,7 @@ DatabaseManager::DatabaseManager(std::string address, int port, std::string user
 }
 
 DatabaseManager::~DatabaseManager() {
-
+    session.close();
 }
 
 mysqlx::Schema DatabaseManager::getSchema() {

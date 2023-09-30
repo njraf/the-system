@@ -136,7 +136,7 @@ int main() {
 	}
 
 
-	SOCKET serverSocket;
+	SOCKET serverSocket = -1;
 	if (!createServerSocket(serverSocket)) {
 		closeSocket(serverSocket);
 		cleanup();
@@ -144,7 +144,7 @@ int main() {
 	}
 
 
-	SOCKET clientSocket;
+	SOCKET clientSocket = -1;
 	if (!createClientSocket(clientSocket)) {
 		closeSocket(serverSocket);
 		closeSocket(clientSocket);

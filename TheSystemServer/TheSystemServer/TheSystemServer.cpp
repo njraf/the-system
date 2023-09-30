@@ -29,6 +29,12 @@ void signalHandler(int signal) {
     isRunning = false;
 }
 
+void cleanup() {
+    isRunning = false;
+#if defined(_WIN32)
+    WSACleanup();
+#endif
+}
 
 bool loadAddresses() {
     std::ifstream file;
@@ -88,9 +94,7 @@ int main() {
     file.open("credentials.txt", std::ifstream::in);
     if (!file.is_open()) {
         std::cout << "Could not open the credentials file" << std::endl;
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        cleanup();
         return 1;
     }
 
@@ -104,10 +108,8 @@ int main() {
         const int DB_PORT = 33060;
         dbm = std::make_shared<DatabaseManager>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword), "the_system");
     } catch (std::exception e) {
-        std::cout << ">>>" << e.what() << std::endl;
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        std::cout << "Error: " << e.what() << std::endl;
+        cleanup();
         return 1;
     }
     memset(dbUsername, 0, FILE_BUFFER_SIZE);
@@ -125,9 +127,7 @@ int main() {
     SOCKET sock = createSocket(AF_INET, SOCK_STREAM, 0);
     if (!isValidSocket(sock)) {
         std::cout << "Failed to create the socket" << std::endl;
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        cleanup();
         return 1;
     }
 
@@ -136,15 +136,12 @@ int main() {
     case -1:
         std::cout << "Failed to make sockaddr_in" << std::endl;
         closeSocket(sock);
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        cleanup();
         return 1;
     case 0:
         std::cout << "Invalid IP address" << std::endl;
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        closeSocket(sock);
+        cleanup();
         return 1;
     case 1:
     default:
@@ -154,9 +151,7 @@ int main() {
     if (SOCKET_ERROR == connect(sock, (struct sockaddr *)&addr, sizeof(addr))) {
         std::cout << "Failed to connect to the Load Balancer" << std::endl;
         closeSocket(sock);
-#if defined(_WIN32)
-        WSACleanup();
-#endif
+        cleanup();
         return 1;
     } else {
         std::cout << "Connected to load balancer" << std::endl;
@@ -177,6 +172,7 @@ int main() {
         int ret = select(sock + 1, &readSet, nullptr, nullptr, &tv);
         if (-1 == ret) {
             std::cout << "Select error" << std::endl;
+            errno = 0;
             continue;
         } else if (0 == ret) {
             //std::cout << "Select timeout" << std::endl;
@@ -210,9 +206,7 @@ int main() {
 
 
     closeSocket(sock);
-#if defined(_WIN32)
-    WSACleanup();
-#endif
+    cleanup();
 
     return 0;
 }
