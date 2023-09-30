@@ -9,7 +9,7 @@
 #include <QNetworkDatagram>
 
 
-class PacketManager : public QObject
+class PacketManager : public QThread
 {
     Q_OBJECT
 public:
@@ -18,13 +18,19 @@ public:
 
     void sendTestPacket();
     void readTestPacket();
+    void stop();
+
+protected:
+    void run();
 
 private:
     QHostAddress loadBalancerHost;
     QHostAddress desktopClientHost;
     const int REQUEST_TX_PORT = 3579;  // SEND to load balancer
     const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
-    QUdpSocket *sock;
+    //QUdpSocket *sock;
+    int sock;
+    volatile bool isRunning = true;
 
 
 signals:

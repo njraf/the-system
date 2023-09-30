@@ -12,10 +12,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&packetmanager, &PacketManager::packetReceived, this, [=](QString message) {
         ui->resultLabel->setText(message);
     });
+
+    packetmanager.start();
 }
 
 MainWindow::~MainWindow()
 {
+    packetmanager.stop();
+    packetmanager.wait();
     delete ui;
 }
 

@@ -187,13 +187,26 @@ int main() {
 			maxFD = newSocket;
 		} else if (FD_ISSET(clientSocket, &readSet)) {
 			//TODO: request from client
+			struct sockaddr_in from;
+			socklen_t fromlen = sizeof(from);
 			std::cout << "Receiving message from client" << std::endl;
 			char buff[64] = "";
-			if (SOCKET_ERROR == recv(clientSocket, buff, sizeof(buff), 0)) {
+			if (SOCKET_ERROR == recvfrom(clientSocket, buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
 				std::cout << "Failed to receive client packet" << std::endl;
 				continue;
 			}
-			printf("Message received: %s\n", buff);
+
+			char fromIP[16] = "";
+			inet_ntop(from.sin_family, &from.sin_addr.s_addr, fromIP, sizeof(fromIP));
+			printf("Message received: %s, From IP: %s, Port: %u\n", buff, fromIP, from.sin_port);
+
+			from.sin_port = RESPONSE_TX_PORT;
+			int bytesWrote = sendto(clientSocket, buff, strlen(buff), 0, (struct sockaddr *)&from, fromlen);
+			if (SOCKET_ERROR == bytesWrote) {
+				std::cout << "Failed to send client packet" << std::endl;
+				continue;
+			}
+			printf("Bytes wrote %d\n", bytesWrote);
 
 			//TODO: determine which server to send to
 
@@ -208,10 +221,6 @@ int main() {
 				}
 			}
 		}
-
-		
-
-
 	}
 
 
