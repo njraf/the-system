@@ -194,54 +194,46 @@ int main() {
 			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
 		} else if (FD_ISSET(clientSocket, &readSet)) {
-			//TODO: request from client
+			// request from client
 			std::cout << "Receiving message from client" << std::endl;
 			struct sockaddr_in from;
 			socklen_t fromlen = sizeof(from);
 			
 			constexpr int PACKET_SIZE = 64;
 			uint8_t buff[PACKET_SIZE];
-			memset(buff, 0, PACKET_SIZE);
+			memset(buff, 0, sizeof(buff));
 			if (SOCKET_ERROR == recvfrom(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
 				std::cout << "Failed to receive client packet" << std::endl;
 				continue;
 			}
 
-			//TODO: determine which server to send to
+			// determine which server to send to
 			if (serverSockets.empty()) {
 				std::cout << "Received client request, but there are no active servers to send to" << std::endl;
 				continue;
 			}
 
-			SOCKET selectedServer = serverSockets[0]->getSocket();
+			const auto minIt = std::min_element(serverSockets.begin(), serverSockets.end(), [=](ServerConnection *s1, ServerConnection *s2) { return (s1->getActiveRequests() < s2->getActiveRequests()); });
+			if (minIt == serverSockets.end()) {
+				std::cout << "Error: Could not find a server to send to" << std::endl;
+			}
 
-			int bytesWrote = send(selectedServer, (char*)buff, PACKET_SIZE, 0);
-			if (-1 == bytesWrote) {
-				std::cout << "Error: Could not send to a server" << std::endl;
-				errno = 0;
-			} else if (0 == bytesWrote) {
-				std::cout << "Warning: Wrote 0 bytes" << std::endl;
+			ServerConnection *selectedServer = (*minIt);
+			
+			if (!selectedServer->sendPacket(buff, sizeof(buff))) {
+				std::cout << "Warning: Failed to send to server" << std::endl;
 			}
 		} else {
 			std::cout << "Receiving messages from servers" << std::endl;
 			for (const auto *s : serverSockets) {
 				if (FD_ISSET(s->getSocket(), &readSet)) {
-					//TODO: response from servers
+					// response from servers
 					constexpr int PACKET_SIZE = 64;
 					uint8_t buff[PACKET_SIZE];
-					memset(buff, 0, PACKET_SIZE);
-					int bytesRead = recv(s->getSocket(), (char*)buff, sizeof(buff), 0);
-					if (-1 == bytesRead) {
-						std::cout << "Failed to read from a server" << std::endl;
-					} else if (0 == bytesRead) {
-						//TODO: resolve disconnected server
-						std::cout << "Server disconnected" << std::endl;
-					} else {
-						std::cout << "Server message: " << buff << std::endl;
-					}
+					memset(buff, 0, sizeof(buff));
+					s->recvPacket(buff, sizeof(buff));
 
-					//TODO: send response to client
-					// need client IP (from packet header?)
+					// send response to client
 
 					char clientIP[16] = "";
 					memcpy(clientIP, buff, 16);
@@ -259,7 +251,7 @@ int main() {
 						break;
 					}
 
-					int bytesWrote = sendto(clientSocket, (char*)buff, PACKET_SIZE, 0, (struct sockaddr *)&addr, sizeof(addr));
+					int bytesWrote = sendto(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr *)&addr, sizeof(addr));
 					if (SOCKET_ERROR == bytesWrote) {
 						std::cout << "Failed to send client packet" << std::endl;
 						continue;

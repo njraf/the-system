@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ServerConnection.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="TheSystemLoadBalancer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ServerConnection.h" />
     <ClInclude Include="sockets.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
