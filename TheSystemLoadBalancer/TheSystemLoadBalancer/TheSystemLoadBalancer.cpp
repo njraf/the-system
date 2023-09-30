@@ -9,9 +9,10 @@
 #include <algorithm>
 
 #include "sockets.h"
+#include "ServerConnection.h"
 
 volatile bool isRunning = true;
-std::vector<std::pair<SOCKET, struct sockaddr_storage>> serverSockets;
+std::vector<ServerConnection*> serverSockets;
 
 const long SELECT_TIMEOUT_SEC = 1;
 std::string LOAD_BALANCER_IP = "127.0.0.1";
@@ -28,6 +29,11 @@ void signalHandler(int signal) {
 
 void cleanup() {
 	isRunning = false;
+	for (const auto *s : serverSockets) {
+		closeSocket(s->getSocket());
+		delete s;
+		s = nullptr;
+	}
 #if defined(_WIN32)
 	WSACleanup();
 #endif
@@ -181,11 +187,10 @@ int main() {
 			if (INVALID_SOCKET == newSocket) {
 				std::cout << "Server accept failed" << std::endl;
 				continue;
-			} else {
-				std::cout << "New server accepted" << std::endl;
 			}
+			std::cout << "New server accepted" << std::endl;
 
-			serverSockets.push_back(std::make_pair(newSocket, theirAddr));
+			serverSockets.push_back(new ServerConnection(newSocket, theirAddr, theirSize));
 			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
 		} else if (FD_ISSET(clientSocket, &readSet)) {
@@ -208,7 +213,7 @@ int main() {
 				continue;
 			}
 
-			SOCKET selectedServer = serverSockets[0].first;
+			SOCKET selectedServer = serverSockets[0]->getSocket();
 
 			int bytesWrote = send(selectedServer, (char*)buff, PACKET_SIZE, 0);
 			if (-1 == bytesWrote) {
@@ -219,13 +224,13 @@ int main() {
 			}
 		} else {
 			std::cout << "Receiving messages from servers" << std::endl;
-			for (const auto &sp : serverSockets) {
-				if (FD_ISSET(sp.first, &readSet)) {
+			for (const auto *s : serverSockets) {
+				if (FD_ISSET(s->getSocket(), &readSet)) {
 					//TODO: response from servers
 					constexpr int PACKET_SIZE = 64;
 					uint8_t buff[PACKET_SIZE];
 					memset(buff, 0, PACKET_SIZE);
-					int bytesRead = recv(sp.first, (char*)buff, sizeof(buff), 0);
+					int bytesRead = recv(s->getSocket(), (char*)buff, sizeof(buff), 0);
 					if (-1 == bytesRead) {
 						std::cout << "Failed to read from a server" << std::endl;
 					} else if (0 == bytesRead) {
@@ -270,10 +275,7 @@ int main() {
 
 	closeSocket(serverSocket);
 	closeSocket(clientSocket);
-	for (const auto &sp : serverSockets) {
-		closeSocket(sp.first);
-	}
-
+	
 	cleanup();
 
 	return 0;

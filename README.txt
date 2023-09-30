@@ -8,7 +8,15 @@ Crossplatform compatibility:
 The server and load balancer will use preprocessor directives to allow the use of both Windows and Berkley sockets so that they can run on any platform. Qt is able to compile on both Windows and Linux, which allows the client application to run on either platform. A kotlin multiplatform project may also be created to bring a client app to both android and iOS with one codebase written in kotlin.
 
 Dependencies:
+[All]
+- create an addresses.csv at the root of the repository with the following format:
+	- load_balancer,<ip address>
+	- server,<ip address>
+	- desktop_client,<ip address>
+
 [Server]
+- create a credentials.txt with the database username and password on lines one and two respectively
+	- place this in the same folder as the server source files
 - MySQL connector/c++ 8.1.0
 	- https://dev.mysql.com/downloads/connector/cpp/
 	- Windows file path C:\Program Files\MySQL\mysql-connector-c++-8.1.0-winx64

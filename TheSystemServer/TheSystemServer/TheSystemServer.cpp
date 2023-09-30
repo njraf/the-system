@@ -40,7 +40,10 @@ bool loadAddresses() {
     std::ifstream file;
     file.open("../../addresses.csv");
     if (!file.is_open()) {
-        return false;
+        file.open("../../../addresses.csv");
+        if (!file.is_open()) {
+            return false;
+        }
     }
 
     std::string line = "";
