@@ -183,10 +183,13 @@ int main() {
         }
 
         // read packets
-        char buff[64] = "";
-        int bytesRead = recv(sock, buff, sizeof(buff), 0);
-        if (-1 == bytesRead) {
+        constexpr int PACKET_SIZE = 64;
+        uint8_t buff[PACKET_SIZE];
+        memset(buff, 0, PACKET_SIZE);
+        int bytesRead = recv(sock, (char*)buff, sizeof(buff), 0);
+        if (SOCKET_ERROR == bytesRead) {
             std::cout << "Read failed" << std::endl;
+            errno = 0;
         } else if (0 == bytesRead) {
             std::cout << "Load balancer disconnected" << std::endl;
             break;
@@ -195,7 +198,7 @@ int main() {
         }
 
         std::cout << "Receiving message: " << buff << std::endl;
-        send(sock, buff, strlen(buff), 0);
+        send(sock, (char*)buff, PACKET_SIZE, 0);
 
         // parse packets
 

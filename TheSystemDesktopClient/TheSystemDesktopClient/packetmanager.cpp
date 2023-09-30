@@ -112,9 +112,21 @@ void PacketManager::run() {
             continue;
         }
 
-        char buff[64] = "";
-        recv(sock, buff, sizeof(buff), 0);
-        emit packetReceived(QString(buff));
+        constexpr int PACKET_SIZE = 64;
+        uint8_t buff[PACKET_SIZE];
+        memset(buff, 0, PACKET_SIZE);
+        int bytesRead = recv(sock, buff, PACKET_SIZE, 0);
+        if (-1 == bytesRead) {
+            qDebug() << "Read error";
+            errno = 0;
+            continue;
+        }
+
+        uint8_t *packetPtr = buff + 16;
+        char message[48] = "";
+        memcpy(message, packetPtr, 48);
+        qDebug() << "Read" << bytesRead << "bytes\nMessage:" << message;
+        emit packetReceived(QString(message));
     }
     qDebug() << "Ending thread";
 }
@@ -127,7 +139,13 @@ void PacketManager::stop() {
 void PacketManager::sendTestPacket() {
     qDebug() << "Sending message";
 
-    const std::string message = "The message";
+    constexpr int PACKET_SIZE = 64;
+    uint8_t packet[PACKET_SIZE];
+    uint8_t *packetPtr = packet;
+    memcpy(packetPtr, desktopClientHost.toString().toStdString().c_str(), 16);
+    packetPtr += 16;
+    std::string message = "Hello world";
+    memcpy(packetPtr, message.c_str(), (PACKET_SIZE - 16));
 
     // use Qt sockets //
 
@@ -144,8 +162,12 @@ void PacketManager::sendTestPacket() {
     addr.sin_family = AF_INET;
     addr.sin_port = REQUEST_TX_PORT;
     inet_pton(AF_INET, loadBalancerHost.toString().toStdString().c_str(), &(addr.sin_addr));
-    int bytesWrote = sendto(sock, message.c_str(), strlen(message.c_str()), 0, (struct sockaddr*)&addr, sizeof(addr));
+    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&addr, sizeof(addr));
     qDebug() << "Bytes wrote" << bytesWrote;
+    if (-1 == bytesWrote) {
+        qDebug() << "Send error";
+        errno = 0;
+    }
 }
 
 void PacketManager::readTestPacket() {

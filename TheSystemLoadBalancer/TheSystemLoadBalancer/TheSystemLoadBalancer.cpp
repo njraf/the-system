@@ -188,44 +188,44 @@ int main() {
 			serverSockets.push_back(std::make_pair(newSocket, theirAddr));
 			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
-
-			char buff[64] = "The message";
-			send(newSocket, buff, strlen(buff), 0);
 		} else if (FD_ISSET(clientSocket, &readSet)) {
 			//TODO: request from client
+			std::cout << "Receiving message from client" << std::endl;
 			struct sockaddr_in from;
 			socklen_t fromlen = sizeof(from);
-			std::cout << "Receiving message from client" << std::endl;
-			char buff[64] = "";
-			if (SOCKET_ERROR == recvfrom(clientSocket, buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
+			
+			constexpr int PACKET_SIZE = 64;
+			uint8_t buff[PACKET_SIZE];
+			memset(buff, 0, PACKET_SIZE);
+			if (SOCKET_ERROR == recvfrom(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
 				std::cout << "Failed to receive client packet" << std::endl;
 				continue;
 			}
 
-			char fromIP[16] = "";
-			inet_ntop(from.sin_family, &from.sin_addr.s_addr, fromIP, sizeof(fromIP));
-			printf("Message received: %s, From IP: %s, Port: %u\n", buff, fromIP, from.sin_port);
-
-			from.sin_port = RESPONSE_TX_PORT;
-			int bytesWrote = sendto(clientSocket, buff, strlen(buff), 0, (struct sockaddr *)&from, fromlen);
-			if (SOCKET_ERROR == bytesWrote) {
-				std::cout << "Failed to send client packet" << std::endl;
+			//TODO: determine which server to send to
+			if (serverSockets.empty()) {
+				std::cout << "Received client request, but there are no active servers to send to" << std::endl;
 				continue;
 			}
-			printf("Bytes wrote %d\n", bytesWrote);
 
-			//TODO: determine which server to send to
+			SOCKET selectedServer = serverSockets[0].first;
 
-
-			//TODO: send to selected server
-
+			int bytesWrote = send(selectedServer, (char*)buff, PACKET_SIZE, 0);
+			if (-1 == bytesWrote) {
+				std::cout << "Error: Could not send to a server" << std::endl;
+				errno = 0;
+			} else if (0 == bytesWrote) {
+				std::cout << "Warning: Wrote 0 bytes" << std::endl;
+			}
 		} else {
 			std::cout << "Receiving messages from servers" << std::endl;
 			for (const auto &sp : serverSockets) {
 				if (FD_ISSET(sp.first, &readSet)) {
 					//TODO: response from servers
-					char buff[64] = "";
-					int bytesRead = recv(sp.first, buff, sizeof(buff), 0);
+					constexpr int PACKET_SIZE = 64;
+					uint8_t buff[PACKET_SIZE];
+					memset(buff, 0, PACKET_SIZE);
+					int bytesRead = recv(sp.first, (char*)buff, sizeof(buff), 0);
 					if (-1 == bytesRead) {
 						std::cout << "Failed to read from a server" << std::endl;
 					} else if (0 == bytesRead) {
@@ -234,6 +234,32 @@ int main() {
 					} else {
 						std::cout << "Server message: " << buff << std::endl;
 					}
+
+					//TODO: send response to client
+					// need client IP (from packet header?)
+
+					char clientIP[16] = "";
+					memcpy(clientIP, buff, 16);
+
+					struct sockaddr_in addr;
+					switch (makeSockaddr(addr, AF_INET, clientIP, RESPONSE_TX_PORT)) {
+					case -1:
+						std::cout << "Failed to make sockaddr_in for the client socket" << std::endl;
+						continue;
+					case 0:
+						std::cout << "Invalid IP address" << std::endl;
+						continue;
+					case 1:
+					default:
+						break;
+					}
+
+					int bytesWrote = sendto(clientSocket, (char*)buff, PACKET_SIZE, 0, (struct sockaddr *)&addr, sizeof(addr));
+					if (SOCKET_ERROR == bytesWrote) {
+						std::cout << "Failed to send client packet" << std::endl;
+						continue;
+					}
+					printf("Bytes wrote %d to IP %s\n", bytesWrote, clientIP);
 
 				}
 			}
