@@ -16,24 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLabel" name="resultLabel">
-      <property name="font">
-       <font>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Waiting for user</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="sendButton">
-      <property name="text">
-       <string>Send Packet</string>
+     <widget class="QStackedWidget" name="pages">
+      <property name="currentIndex">
+       <number>-1</number>
       </property>
      </widget>
     </item>

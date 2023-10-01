@@ -11,14 +11,21 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    packetmanager.cpp
+    packetmanager.cpp \
+    page.cpp \
+    pagenavigator.cpp \
+    signinpage.cpp
 
 HEADERS += \
     mainwindow.h \
-    packetmanager.h
+    packetmanager.h \
+    page.h \
+    pagenavigator.h \
+    signinpage.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    signinpage.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
