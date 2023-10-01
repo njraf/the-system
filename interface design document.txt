@@ -1,0 +1,49 @@
+This document contains packet structures for every packet that could get sent at any point in the system.
+
+=====================================
+
+Common header
+The header attached to the start of every packet.
+
+Field | type[bytes]
+-------------------
+Client IP | string[64]
+Packet type | string[4]
+Session ID | int[4]
+CRC | int[4]
+
+=====================================
+
+Result packet (RSLT)
+When the client makes a request that does not require a response from the server, this is sent by the server to notify the client whether their request was fulfilled.
+If the clients sends a request and expects a response, but the server failed to handle the request, a failed result packet is returned.
+
+Field | type[bytes]
+-------------------
+result | int[4] // 0 for failed, 1 for success
+
+=====================================
+
+Sign up packet (SNUP)
+The client requests the server create an account.
+
+Field | type[bytes]
+-------------------
+username | string[64]
+password | string[64]
+email | string[64]
+first name | string[[64]
+last name | string[64]
+age | int[4]
+
+=====================================
+
+Sign in packet (SNIN)
+
+Field | type[bytes]
+-------------------
+username | string[64]
+password | string[64]
+
+
+
