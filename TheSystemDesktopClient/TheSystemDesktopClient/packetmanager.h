@@ -8,6 +8,9 @@
 #include <QUdpSocket>
 #include <QNetworkDatagram>
 
+#ifndef _WIN32
+#include <netinet/in.h>
+#endif
 
 class PacketManager : public QThread
 {
@@ -15,22 +18,34 @@ class PacketManager : public QThread
 public:
     explicit PacketManager(QObject *parent = nullptr);
     ~PacketManager();
+    static PacketManager* getInstance();
 
     void sendTestPacket();
     void readTestPacket();
     void stop();
 
+    // send functions
+    void sendSignInPacket(QString username, QString password);
+
+
 protected:
     void run();
 
 private:
+    static PacketManager *instance;
+    static constexpr int HEADER_SIZE = 28;
+
     QHostAddress loadBalancerHost;
     QHostAddress desktopClientHost;
     const int REQUEST_TX_PORT = 3579;  // SEND to load balancer
     const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
+    struct sockaddr_in requestAddr;
     //QUdpSocket *sock;
     int sock;
     volatile bool isRunning = true;
+    int sessionID;
+
+    void packHeader(uint8_t *buff, std::string type); // NOTE: call at the end of each pack function for accurate CRC value
 
 
 signals:

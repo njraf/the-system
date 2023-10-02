@@ -7,7 +7,7 @@ The header attached to the start of every packet.
 
 Field | type[bytes]
 -------------------
-Client IP | string[64]
+Client IP | string[16]
 Packet type | string[4]
 Session ID | int[4]
 CRC | int[4]

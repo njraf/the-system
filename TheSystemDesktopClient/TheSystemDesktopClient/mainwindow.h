@@ -19,6 +19,5 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    PacketManager packetmanager;
 };
 #endif // MAINWINDOW_H

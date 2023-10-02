@@ -15,9 +15,11 @@
 #include <netinet/in.h>
 #endif
 
+PacketManager* PacketManager::instance = nullptr;
 
 PacketManager::PacketManager(QObject *parent)
     : QThread(parent)
+    , sessionID(0)
     //, sock(new QUdpSocket())
 {
     // get IP addresses of the load balancer and this client
@@ -50,14 +52,20 @@ PacketManager::PacketManager(QObject *parent)
     if (-1 == sock) {
         qDebug() << "Bad sock fd";
     }
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = RESPONSE_RX_PORT;
-    if (1 != inet_pton(AF_INET, desktopClientHost.toString().toStdString().c_str(), &(addr.sin_addr))) {
-        qDebug() << "inet_pton error";
+    struct sockaddr_in responseAddr;
+    responseAddr.sin_family = AF_INET;
+    responseAddr.sin_port = RESPONSE_RX_PORT;
+    if (1 != inet_pton(AF_INET, desktopClientHost.toString().toStdString().c_str(), &(responseAddr.sin_addr))) {
+        qDebug() << "Response inet_pton error";
     }
-    if (-1 == bind(sock, (struct sockaddr*)&addr, sizeof(addr))) {
+    if (-1 == bind(sock, (struct sockaddr*)&responseAddr, sizeof(responseAddr))) {
         qDebug() << "Bind error";
+    }
+
+    requestAddr.sin_family = AF_INET;
+    requestAddr.sin_port = REQUEST_TX_PORT;
+    if (-1 == inet_pton(AF_INET, loadBalancerHost.toString().toStdString().c_str(), &(requestAddr.sin_addr))) {
+        qDebug() << "Request inet_pton error";
     }
 #endif
 }
@@ -67,6 +75,13 @@ PacketManager::~PacketManager() {
     close(sock);
     //sock->close();
     //delete sock;
+}
+
+PacketManager* PacketManager::getInstance() {
+    if (nullptr == PacketManager::instance) {
+        instance = new PacketManager();
+    }
+    return instance;
 }
 
 void PacketManager::run() {
@@ -157,12 +172,7 @@ void PacketManager::sendTestPacket() {
 
 
     // use Berkley sockets (works on linux) //
-
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = REQUEST_TX_PORT;
-    inet_pton(AF_INET, loadBalancerHost.toString().toStdString().c_str(), &(addr.sin_addr));
-    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&addr, sizeof(addr));
+    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";
@@ -177,3 +187,41 @@ void PacketManager::readTestPacket() {
     //    emit packetReceived(QString(datagram.data().data()));
     //}
 }
+
+void PacketManager::packHeader(uint8_t *buff, std::string type) {
+    uint8_t *buffPtr = buff;
+    memcpy(buffPtr, desktopClientHost.toString().toStdString().c_str(), 16);
+    buffPtr += 16;
+    memcpy(buffPtr, type.c_str(), 4);
+    buffPtr += 4;
+    uint32_t val32 = htonl(sessionID);
+    memcpy(buffPtr, &val32, 4);
+    buffPtr += 4;
+    //TODO: crc below here
+    val32 = htonl(0);
+    memcpy(buffPtr, &val32, 4);
+    buffPtr += 4;
+}
+
+void PacketManager::sendSignInPacket(QString username, QString password) {
+    qDebug() << "Sending sign in packet";
+    // pack
+    constexpr int PACKET_SIZE = HEADER_SIZE + 128;
+    uint8_t packet[PACKET_SIZE];
+    uint8_t *packetPtr = packet;
+    memcpy(packetPtr, username.toStdString().c_str(), 64);
+    packetPtr += 64;
+    memcpy(packetPtr, password.toStdString().c_str(), 64);
+    packetPtr += 64;
+
+    packHeader(packet, "SNIN");
+
+    // send
+    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    qDebug() << "Bytes wrote" << bytesWrote;
+    if (-1 == bytesWrote) {
+        qDebug() << "Send error";
+        errno = 0;
+    }
+}
+

@@ -28,13 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
     pageNavigator->populateRoutes(routes);
     pageNavigator->navigate(PageName::SIGN_IN);
 
-    packetmanager.start();
+    PacketManager::getInstance()->start();
 }
 
 MainWindow::~MainWindow()
 {
-    packetmanager.stop();
-    packetmanager.wait();
+    PacketManager::getInstance()->stop();
+    PacketManager::getInstance()->wait();
     delete PageNavigator::getInstance();
     delete ui;
 }
