@@ -152,11 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="RequestHandler.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="TheSystemServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatabaseManager.h" />
+    <ClInclude Include="RequestHandler.h" />
     <ClInclude Include="sockets.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,6 +15,7 @@ sockets:
 
 #include "sockets.h"
 #include "DatabaseManager.h"
+#include "RequestHandler.h"
 
 const long SELECT_TIMEOUT_SEC = 1;
 std::string DATABASE_IP = "127.0.0.1";
@@ -160,7 +161,7 @@ int main() {
         std::cout << "Connected to load balancer" << std::endl;
     }
 
-    
+    RequestHandler requestHandler;
 
     while (isRunning) {
         // wait for requests
@@ -186,9 +187,9 @@ int main() {
         }
 
         // read packets
-        constexpr int PACKET_SIZE = 64;
+        constexpr int PACKET_SIZE = 256;
         uint8_t buff[PACKET_SIZE];
-        memset(buff, 0, PACKET_SIZE);
+        memset(buff, 0, sizeof(buff));
         int bytesRead = recv(sock, (char*)buff, sizeof(buff), 0);
         if (SOCKET_ERROR == bytesRead) {
             std::cout << "Read failed" << std::endl;
@@ -200,14 +201,33 @@ int main() {
             continue;
         }
 
-        std::cout << "Receiving message: " << buff << std::endl;
-        send(sock, (char*)buff, PACKET_SIZE, 0);
+        
+        
 
         // parse packets
-
+        std::string packetType = "";
+        if (!requestHandler.verifyHeader(buff, packetType)) {
+            std::cout << "Invalid packet header" << std::endl;
+            continue;
+        }
 
         // execute request
+        if ("SNIN" == packetType) {
+            requestHandler.resolveSignIn(buff, sock);
+        } else if ("" == packetType) {
 
+        } else if ("" == packetType) {
+
+        } else if ("" == packetType) {
+
+        } else if ("" == packetType) {
+
+        } else if ("" == packetType) {
+
+        } else {
+            std::cout << "Unrecognized packet type " << packetType << std::endl;
+            continue;
+        }
     }
 
 
