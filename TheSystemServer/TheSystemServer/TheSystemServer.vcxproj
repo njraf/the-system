@@ -152,13 +152,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DatabaseManager.cpp" />
+    <ClCompile Include="PacketFormat.cpp" />
     <ClCompile Include="RequestHandler.cpp" />
+    <ClCompile Include="SignInDAO.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="TheSystemServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DatabaseManager.h" />
+    <ClInclude Include="PacketFormats.h" />
     <ClInclude Include="RequestHandler.h" />
+    <ClInclude Include="SignInDAO.h" />
     <ClInclude Include="sockets.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

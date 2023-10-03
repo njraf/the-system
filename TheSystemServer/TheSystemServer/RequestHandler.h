@@ -3,10 +3,12 @@
 #include <string>
 
 #include "sockets.h"
+#include "DatabaseManager.h"
+#include "PacketFormats.h"
 
 class RequestHandler {
 public:
-	RequestHandler() = default;
+	RequestHandler(std::shared_ptr<DatabaseManager> databaseManager_);
 	~RequestHandler() = default;
 
 	bool verifyHeader(uint8_t *buff, std::string &packetType);
@@ -15,5 +17,6 @@ public:
 
 private:
 	const int PACKET_HEADER_SIZE = 28;
+	std::shared_ptr<DatabaseManager> databaseManager;
 };
 

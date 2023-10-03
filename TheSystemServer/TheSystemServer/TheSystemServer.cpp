@@ -161,7 +161,8 @@ int main() {
         std::cout << "Connected to load balancer" << std::endl;
     }
 
-    RequestHandler requestHandler;
+    std::shared_ptr<DatabaseManager> databaseManager = std::make_shared<DatabaseManager>();
+    RequestHandler requestHandler(databaseManager);
 
     while (isRunning) {
         // wait for requests
