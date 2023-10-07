@@ -6,10 +6,10 @@ class DatabaseManager {
 
 public:
 	DatabaseManager();
-	DatabaseManager(std::string initialSchema);
+	DatabaseManager(std::shared_ptr<mysqlx::Session> session_, std::string initialSchema);
 	~DatabaseManager();
 
-	mysqlx::Schema getSchema(std::shared_ptr<mysqlx::Session> session);
+	mysqlx::Schema getSchema();
 
 	void printTable(mysqlx::Table table);
 
@@ -33,5 +33,6 @@ public:
 
 private:
 	std::string schema;
+	std::shared_ptr<mysqlx::Session> session;
 };
 

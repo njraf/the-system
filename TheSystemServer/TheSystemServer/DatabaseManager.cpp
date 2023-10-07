@@ -7,8 +7,9 @@ DatabaseManager::DatabaseManager()
 {
         
 }
-DatabaseManager::DatabaseManager(std::string initialSchema)
+DatabaseManager::DatabaseManager(std::shared_ptr<mysqlx::Session> session_, std::string initialSchema)
     : schema(initialSchema)
+    , session(session_)
 {
 
 }
@@ -17,7 +18,7 @@ DatabaseManager::~DatabaseManager() {
     
 }
 
-mysqlx::Schema DatabaseManager::getSchema(std::shared_ptr<mysqlx::Session> session) {
+mysqlx::Schema DatabaseManager::getSchema() {
 	return session->getSchema(schema);
 }
 

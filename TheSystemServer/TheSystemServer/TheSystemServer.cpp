@@ -111,7 +111,6 @@ int main() {
 
 
     // connect to the database
-    std::shared_ptr<DatabaseManager> dbm = std::make_shared<DatabaseManager>("the_system");
     try {
         const int DB_PORT = 33060;
         session = std::make_shared<mysqlx::Session>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword));
@@ -124,12 +123,13 @@ int main() {
     memset(dbUsername, 0, FILE_BUFFER_SIZE);
     memset(dbPassword, 0, FILE_BUFFER_SIZE);
     
-    for (std::string asd : dbm->getSchema(session).getTableNames()) {
+    std::shared_ptr<DatabaseManager> databaseManager = std::make_shared<DatabaseManager>(session, "the_system");
+    for (std::string asd : databaseManager->getSchema().getTableNames()) {
         // print table names
         //std::cout << asd << std::endl;
     }
-    mysqlx::Table users = dbm->getSchema(session).getTable("users");
-    dbm->printTable(users);
+    mysqlx::Table users = databaseManager->getSchema().getTable("users");
+    databaseManager->printTable(users);
     
 
     // connect to load balancer over TCP
@@ -166,7 +166,6 @@ int main() {
         std::cout << "Connected to load balancer" << std::endl;
     }
 
-    std::shared_ptr<DatabaseManager> databaseManager = std::make_shared<DatabaseManager>();
     RequestHandler requestHandler(databaseManager);
 
     while (isRunning) {
