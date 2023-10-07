@@ -2,22 +2,22 @@
 
 #include <iostream>
 
-DatabaseManager::DatabaseManager(std::string address_, int port_, std::string username_, std::string password_, std::string schema_)
-	: address(address)
-    , port(port_)
-    , username(username_)
-    , password(password_)
-    , schema(schema_)
-    , session(std::make_shared<mysqlx::Session>(address, port, username, password, schema))
+DatabaseManager::DatabaseManager()
+    : schema("")
 {
-    session->sql(mysqlx::string("USE ") + mysqlx::string(schema) + mysqlx::string(";")).execute();
+        
+}
+DatabaseManager::DatabaseManager(std::string initialSchema)
+    : schema(initialSchema)
+{
+
 }
 
 DatabaseManager::~DatabaseManager() {
-    session->close();
+    
 }
 
-mysqlx::Schema DatabaseManager::getSchema() {
+mysqlx::Schema DatabaseManager::getSchema(std::shared_ptr<mysqlx::Session> session) {
 	return session->getSchema(schema);
 }
 

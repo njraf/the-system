@@ -5,11 +5,11 @@
 class DatabaseManager {
 
 public:
-	DatabaseManager() = default;
-	DatabaseManager(std::string address, int port, std::string username, std::string password, std::string initialSchema);
+	DatabaseManager();
+	DatabaseManager(std::string initialSchema);
 	~DatabaseManager();
 
-	mysqlx::Schema getSchema();
+	mysqlx::Schema getSchema(std::shared_ptr<mysqlx::Session> session);
 
 	void printTable(mysqlx::Table table);
 
@@ -32,11 +32,6 @@ public:
 
 
 private:
-	std::shared_ptr<mysqlx::Session> session;
-	std::string address;
-	int port;
-	std::string username;
-	std::string password;
 	std::string schema;
 };
 

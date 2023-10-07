@@ -25,6 +25,8 @@ const int REQUEST_RX_PORT = 3578; // from load balancer
 const int RESPONSE_TX_PORT = 3577; // to load balancer
 volatile bool isRunning = true;
 
+std::shared_ptr<mysqlx::Session> session;
+
 void signalHandler(int signal) {
     std::cout << "Handling signal. Wait for at most " << SELECT_TIMEOUT_SEC << " seconds" << std::endl;
     isRunning = false;
@@ -35,6 +37,7 @@ void cleanup() {
 #if defined(_WIN32)
     WSACleanup();
 #endif
+    session->close();
 }
 
 bool loadAddresses() {
@@ -105,12 +108,14 @@ int main() {
     file.getline(dbUsername, FILE_BUFFER_SIZE - 1);
     file.getline(dbPassword, FILE_BUFFER_SIZE - 1);
     file.close();
-    
+
+
     // connect to the database
-    std::shared_ptr<DatabaseManager> dbm;
+    std::shared_ptr<DatabaseManager> dbm = std::make_shared<DatabaseManager>("the_system");
     try {
         const int DB_PORT = 33060;
-        dbm = std::make_shared<DatabaseManager>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword), "the_system");
+        session = std::make_shared<mysqlx::Session>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword));
+        session->sql(mysqlx::string("USE ") + mysqlx::string("the_system") + mysqlx::string(";")).execute();
     } catch (std::exception e) {
         std::cout << "Error: " << e.what() << std::endl;
         cleanup();
@@ -119,11 +124,11 @@ int main() {
     memset(dbUsername, 0, FILE_BUFFER_SIZE);
     memset(dbPassword, 0, FILE_BUFFER_SIZE);
     
-    for (std::string asd : dbm->getSchema().getTableNames()) {
+    for (std::string asd : dbm->getSchema(session).getTableNames()) {
         // print table names
         //std::cout << asd << std::endl;
     }
-    mysqlx::Table users = dbm->getSchema().getTable("users");
+    mysqlx::Table users = dbm->getSchema(session).getTable("users");
     dbm->printTable(users);
     
 
