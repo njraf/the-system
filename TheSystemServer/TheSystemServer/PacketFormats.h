@@ -3,11 +3,12 @@
 #include <string>
 
 constexpr size_t MTU = 1500;
+constexpr size_t HEADER_SIZE = 28;
 constexpr size_t MAX_STR_LEN = 64;
 
 typedef struct {
-	char clientIP[MAX_STR_LEN];
-	char packetType[MAX_STR_LEN];
+	char clientIP[16];
+	char packetType[5];
 	uint32_t sessionID;
 	uint32_t crc;
 } PacketHeader;

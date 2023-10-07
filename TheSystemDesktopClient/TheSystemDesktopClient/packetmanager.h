@@ -34,6 +34,7 @@ protected:
 private:
     static PacketManager *instance;
     static constexpr int HEADER_SIZE = 28;
+    static constexpr int MTU = 1500;
 
     QHostAddress loadBalancerHost;
     QHostAddress desktopClientHost;

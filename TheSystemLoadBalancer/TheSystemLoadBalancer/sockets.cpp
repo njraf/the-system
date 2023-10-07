@@ -34,19 +34,17 @@ int getSocketErrno() {
 #endif
 }
 
-void printErrorText(int error) {
+void printErrorText() {
 #if defined(_WIN32)
-	LPWSTR message = nullptr;
-	const DWORD MESSAGE_BUFFER_SIZE = 256;
-	FormatMessageW(
-		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		0, error, 0, message, MESSAGE_BUFFER_SIZE, 0);
-
-	printf("%S\n", message);
+	wchar_t *s = NULL;
+	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, WSAGetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPWSTR)&s, 0, NULL);
+	fprintf(stderr, "%S\n", s);
+	LocalFree(s);
 #else
-
-	printf("%s\n", strerror(error));
-
+	printf("%s\n", strerror(errno));
 #endif
 }
 

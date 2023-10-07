@@ -198,12 +198,12 @@ int main() {
 			std::cout << "Receiving message from client" << std::endl;
 			struct sockaddr_in from;
 			socklen_t fromlen = sizeof(from);
-			
-			constexpr int PACKET_SIZE = 64;
-			uint8_t buff[PACKET_SIZE];
+
+			uint8_t buff[MTU];
 			memset(buff, 0, sizeof(buff));
 			if (SOCKET_ERROR == recvfrom(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
 				std::cout << "Failed to receive client packet" << std::endl;
+				printErrorText();
 				continue;
 			}
 
@@ -228,8 +228,7 @@ int main() {
 			for (const auto *s : serverSockets) {
 				if (FD_ISSET(s->getSocket(), &readSet)) {
 					// response from servers
-					constexpr int PACKET_SIZE = 64;
-					uint8_t buff[PACKET_SIZE];
+					uint8_t buff[MTU];
 					memset(buff, 0, sizeof(buff));
 					s->recvPacket(buff, sizeof(buff));
 

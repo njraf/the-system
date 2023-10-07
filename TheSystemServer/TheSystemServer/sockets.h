@@ -33,7 +33,7 @@ void closeSocket(SOCKET sock);
 
 int getSocketErrno();
 
-void printErrorText(int error);
+void printErrorText();
 
 bool isValidSocket(SOCKET sock);
 

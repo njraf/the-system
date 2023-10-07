@@ -27,13 +27,15 @@
 #deifne ADDRESS_FAMILY unsigned short
 #endif
 
+constexpr int MTU = 1500;
+
 SOCKET createSocket(int domain, int type, int protocol);
 
 void closeSocket(SOCKET sock);
 
 int getSocketErrno();
 
-void printErrorText(int error);
+void printErrorText();
 
 bool isValidSocket(SOCKET sock);
 

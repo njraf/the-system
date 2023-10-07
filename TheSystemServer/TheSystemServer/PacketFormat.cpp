@@ -9,6 +9,7 @@ void readPacketHeader(uint8_t *buff, PacketHeader &header) {
     memcpy(header.clientIP, buffPtr, sizeof(header.clientIP));
     buffPtr += 16;
     memcpy(header.packetType, buffPtr, sizeof(uint32_t));
+    header.packetType[4] = '\0';
     buffPtr += sizeof(uint32_t);
     header.sessionID = ntohl(*buffPtr);
     buffPtr += 4;
@@ -33,13 +34,13 @@ void packHeader(uint8_t *buff, const PacketHeader &header) {
     memcpy(buffPtr, header.packetType, sizeof(uint32_t));
     buffPtr += sizeof(uint32_t);
     *buffPtr = htonl(header.sessionID);
-    buffPtr += 4;
+    buffPtr += sizeof(header.sessionID);
     *buffPtr = htonl(header.crc);
 }
 
 void packResultPacket(uint8_t *buff, const ResultPacket &packet) {
-    uint8_t *buffPtr = buff + sizeof(PacketHeader);
+    uint8_t *buffPtr = buff + HEADER_SIZE;
     *buffPtr = htonl(packet.succcess);
-    buffPtr += 4;
+    buffPtr += sizeof(packet.succcess);
     memcpy(buffPtr, packet.message, sizeof(packet.message));
 }

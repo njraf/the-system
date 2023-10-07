@@ -127,10 +127,9 @@ void PacketManager::run() {
             continue;
         }
 
-        constexpr int PACKET_SIZE = 64;
-        uint8_t buff[PACKET_SIZE];
-        memset(buff, 0, PACKET_SIZE);
-        int bytesRead = recv(sock, buff, PACKET_SIZE, 0);
+        uint8_t buff[MTU];
+        memset(buff, 0, MTU);
+        int bytesRead = recv(sock, buff, MTU, 0);
         if (-1 == bytesRead) {
             qDebug() << "Read error";
             errno = 0;
@@ -138,10 +137,20 @@ void PacketManager::run() {
         }
 
         uint8_t *packetPtr = buff + 16;
-        char message[48] = "";
-        memcpy(message, packetPtr, 48);
-        qDebug() << "Read" << bytesRead << "bytes\nMessage:" << message;
-        emit packetReceived(QString(message));
+        char packetType[5] = "";
+        memcpy(packetType, packetPtr, 4);
+        packetType[4] = '\0';
+        if ("RSLT" == QString(packetType)) {
+            packetPtr = buff + 28;
+            uint32_t success = 0;
+            memcpy(&success, packetPtr, sizeof(uint32_t));
+            success = ntohl(success);
+            packetPtr += 4;
+            char message[64] = "";
+            memcpy(message, packetPtr, 64);
+            qDebug() << "Read" << bytesRead << "bytes\nPacket type: " << packetType << "\nSuccess: " << success << "\nMessage:" << message;
+            emit packetReceived(QString(message));
+        }
     }
     qDebug() << "Ending thread";
 }
@@ -154,13 +163,12 @@ void PacketManager::stop() {
 void PacketManager::sendTestPacket() {
     qDebug() << "Sending message";
 
-    constexpr int PACKET_SIZE = 64;
-    uint8_t packet[PACKET_SIZE];
+    uint8_t packet[MTU];
     uint8_t *packetPtr = packet;
     memcpy(packetPtr, desktopClientHost.toString().toStdString().c_str(), 16);
     packetPtr += 16;
     std::string message = "Hello world";
-    memcpy(packetPtr, message.c_str(), (PACKET_SIZE - 16));
+    memcpy(packetPtr, message.c_str(), (MTU - 16));
 
     // use Qt sockets //
 
@@ -206,9 +214,10 @@ void PacketManager::packHeader(uint8_t *buff, std::string type) {
 void PacketManager::sendSignInPacket(QString username, QString password) {
     qDebug() << "Sending sign in packet";
     // pack
-    constexpr int PACKET_SIZE = HEADER_SIZE + 128;
-    uint8_t packet[PACKET_SIZE];
-    uint8_t *packetPtr = packet;
+    //constexpr int PACKET_SIZE = HEADER_SIZE + 128;
+    uint8_t packet[MTU];
+    memset(packet, 0, MTU);
+    uint8_t *packetPtr = packet + HEADER_SIZE;
     memcpy(packetPtr, username.toStdString().c_str(), 64);
     packetPtr += 64;
     memcpy(packetPtr, password.toStdString().c_str(), 64);

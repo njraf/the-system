@@ -14,7 +14,7 @@ bool RequestHandler::verifyHeader(uint8_t *buff, std::string &packetType) {
 
 	// check packet type
 	packetType = header.packetType;
-	std::cout << "Receiving message with type: " << packetType << std::endl;
+	std::cout << "Receiving message with type: " << header.packetType << std::endl;
 
 	//TODO: check session ID
 	//if (0 < header.sessionID) {
@@ -47,6 +47,7 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 	if (0 == header.sessionID) {
 		//TODO: generate a new session ID
 	}
+	strncpy_s(header.packetType, sizeof(header.packetType), "RSLT", 4);
 
 	//TODO: temp for testing
 	resultPacket.succcess = true;
