@@ -188,8 +188,7 @@ int main() {
         }
 
         // read packets
-        constexpr int PACKET_SIZE = 256;
-        uint8_t buff[PACKET_SIZE];
+        uint8_t buff[MTU];
         memset(buff, 0, sizeof(buff));
         int bytesRead = recv(sock, (char*)buff, sizeof(buff), 0);
         if (SOCKET_ERROR == bytesRead) {

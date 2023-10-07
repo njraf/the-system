@@ -1,6 +1,8 @@
 #include "PacketFormats.h"
 #include "sockets.h"
 
+// unpack //
+
 void readPacketHeader(uint8_t *buff, PacketHeader &header) {
     // check packet type
     uint8_t *buffPtr = buff;
@@ -19,4 +21,25 @@ void readSigninPacket(uint8_t *buff, SignInPacket &packet) {
     buffPtr += sizeof(packet.username);
     memcpy(packet.password, buffPtr, sizeof(packet.password));
     buffPtr += sizeof(packet.password);
+}
+
+
+// pack //
+
+void packHeader(uint8_t *buff, const PacketHeader &header) {
+    uint8_t *buffPtr = buff;
+    memcpy(buffPtr, header.clientIP, sizeof(header.clientIP));
+    buffPtr += 16;
+    memcpy(buffPtr, header.packetType, sizeof(uint32_t));
+    buffPtr += sizeof(uint32_t);
+    *buffPtr = htonl(header.sessionID);
+    buffPtr += 4;
+    *buffPtr = htonl(header.crc);
+}
+
+void packResultPacket(uint8_t *buff, const ResultPacket &packet) {
+    uint8_t *buffPtr = buff + sizeof(PacketHeader);
+    *buffPtr = htonl(packet.succcess);
+    buffPtr += 4;
+    memcpy(buffPtr, packet.message, sizeof(packet.message));
 }

@@ -21,6 +21,7 @@ If the clients sends a request and expects a response, but the server failed to 
 Field | type[bytes]
 -------------------
 result | int[4] // 0 for failed, 1 for success
+message | string[64]
 
 =====================================
 
