@@ -14,18 +14,21 @@ SOURCES += \
     packetmanager.cpp \
     page.cpp \
     pagenavigator.cpp \
-    signinpage.cpp
+    signinpage.cpp \
+    signuppage.cpp
 
 HEADERS += \
     mainwindow.h \
     packetmanager.h \
     page.h \
     pagenavigator.h \
-    signinpage.h
+    signinpage.h \
+    signuppage.h
 
 FORMS += \
     mainwindow.ui \
-    signinpage.ui
+    signinpage.ui \
+    signuppage.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

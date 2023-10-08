@@ -142,14 +142,14 @@ void PacketManager::run() {
         packetType[4] = '\0';
         if ("RSLT" == QString(packetType)) {
             packetPtr = buff + 28;
-            uint32_t success = 0;
-            memcpy(&success, packetPtr, sizeof(uint32_t));
-            success = ntohl(success);
-            packetPtr += 4;
+            uint32_t val32 = 0;
+            memcpy(&val32, packetPtr, sizeof(uint32_t));
+            bool success = static_cast<bool>(ntohl(val32));
+            packetPtr += sizeof(uint32_t);
             char message[64] = "";
             memcpy(message, packetPtr, 64);
             qDebug() << "Read" << bytesRead << "bytes\nPacket type: " << packetType << "\nSuccess: " << success << "\nMessage:" << message;
-            emit packetReceived(QString(message));
+            emit receivedResult(success, QString(message));
         }
     }
     qDebug() << "Ending thread";
@@ -196,7 +196,7 @@ void PacketManager::readTestPacket() {
     //}
 }
 
-void PacketManager::packHeader(uint8_t *buff, std::string type) {
+void PacketManager::packHeader(uint8_t *buff, std::string type) const {
     uint8_t *buffPtr = buff;
     memcpy(buffPtr, desktopClientHost.toString().toStdString().c_str(), 16);
     buffPtr += 16;
@@ -211,7 +211,7 @@ void PacketManager::packHeader(uint8_t *buff, std::string type) {
     buffPtr += 4;
 }
 
-void PacketManager::sendSignInPacket(QString username, QString password) {
+void PacketManager::sendSignInPacket(QString username, QString password) const {
     qDebug() << "Sending sign in packet";
     // pack
     //constexpr int PACKET_SIZE = HEADER_SIZE + 128;

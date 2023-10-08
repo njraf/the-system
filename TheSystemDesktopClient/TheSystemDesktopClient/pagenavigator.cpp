@@ -1,5 +1,7 @@
 #include "pagenavigator.h"
 
+#include <QDebug>
+
 PageNavigator* PageNavigator::instance = nullptr;
 
 PageNavigator::PageNavigator(QObject *parent)
@@ -19,8 +21,12 @@ PageNavigator* PageNavigator::getInstance() {
     return PageNavigator::instance;
 }
 
-void PageNavigator::navigate(PageName page) {
-
+void PageNavigator::navigate(PageName page) const {
+    if (!routes.contains(page)) {
+        qDebug() << "This page does not have a route" << page;
+        return;
+    }
     currentPage = routes[page]();
+    backStack.push(currentPage);
     emit pageChanged(currentPage);
 }

@@ -35,15 +35,15 @@
    <property name="bottomMargin">
     <number>22</number>
    </property>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="usernameInput"/>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="usernameLabel">
      <property name="text">
       <string>Username</string>
      </property>
     </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="usernameInput"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="passwordLabel">
@@ -55,6 +55,13 @@
    <item row="1" column="1">
     <widget class="QLineEdit" name="passwordInput"/>
    </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="statusLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="1">
     <widget class="QPushButton" name="signinButton">
      <property name="text">
@@ -62,20 +69,23 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item row="4" column="1">
-    <widget class="QLabel" name="signupLink">
+    <widget class="QPushButton" name="signupButton">
      <property name="text">
       <string>Sign up</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignHCenter|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLabel" name="statusLabel">
-     <property name="text">
-      <string/>
      </property>
     </widget>
    </item>

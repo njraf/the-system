@@ -1,11 +1,12 @@
 #include <QMap>
+#include <QDebug>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "packetmanager.h"
 #include "pagenavigator.h"
 #include "signinpage.h"
-//#include "signuppage.h"
+#include "signuppage.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,15 +16,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     PageNavigator *pageNavigator = PageNavigator::getInstance();
     connect(pageNavigator, &PageNavigator::pageChanged, this, [=](QSharedPointer<Page> page) {
-        ui->pages->addWidget(page.data());
+        const int stackIndex = ui->pages->addWidget(page.data());
+        ui->pages->setCurrentIndex(stackIndex);
     });
-
-    QSharedPointer<SignInPage> signinPage = QSharedPointer<SignInPage>::create(this);
-    ui->pages->addWidget(signinPage.data());
 
     QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes;
     routes.insert(PageName::SIGN_IN, []() { return QSharedPointer<SignInPage>::create(); });
-    //routes.insert(PageName::SIGN_UP, []() { return QSharedPointer<SignUpPage>::create(); });
+    routes.insert(PageName::SIGN_UP, []() { return QSharedPointer<SignUpPage>::create(); });
 
     pageNavigator->populateRoutes(routes);
     pageNavigator->navigate(PageName::SIGN_IN);

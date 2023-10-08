@@ -25,7 +25,7 @@ public:
     void stop();
 
     // send functions
-    void sendSignInPacket(QString username, QString password);
+    void sendSignInPacket(QString username, QString password) const;
 
 
 protected:
@@ -46,11 +46,12 @@ private:
     volatile bool isRunning = true;
     int sessionID;
 
-    void packHeader(uint8_t *buff, std::string type); // NOTE: call at the end of each pack function for accurate CRC value
+    void packHeader(uint8_t *buff, std::string type) const; // NOTE: call at the end of each pack function for accurate CRC value
 
 
 signals:
     void packetReceived(QString message);
+    void receivedResult(bool success, QString message);
 };
 
 #endif // PACKETMANAGER_H

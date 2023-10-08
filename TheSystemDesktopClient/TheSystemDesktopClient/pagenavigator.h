@@ -16,16 +16,16 @@ public:
 
     static PageNavigator* getInstance();
     void populateRoutes(QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes_);
-    void navigate(PageName page);
+    void navigate(PageName page) const;
 
 private:
     static PageNavigator *instance;
-    QStack<Page> backStack;
-    QSharedPointer<Page> currentPage;
+    mutable QStack<QSharedPointer<Page>> backStack;
+    mutable QSharedPointer<Page> currentPage;
     QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes;
 
 signals:
-    void pageChanged(QSharedPointer<Page> page);
+    void pageChanged(QSharedPointer<Page> page) const;
 
 };
 
