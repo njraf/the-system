@@ -1,8 +1,27 @@
 #pragma once
 
+#include <vector>
+#include <map>
+#include <memory>
+
 #include <mysqlx/xdevapi.h>
 
 class DatabaseManager {
+
+private:
+	class IntermediateQuery {
+	public:
+		IntermediateQuery(DatabaseManager *dbm_, std::string table_);
+		~IntermediateQuery() = default;
+		std::vector<std::vector<mysqlx::Value>> execute();
+		std::map<std::string, std::vector<std::string>> executeAsMap();
+		DatabaseManager::IntermediateQuery* select(std::vector<std::string> columns_ = {});
+	private:
+		DatabaseManager *dbm;
+		std::string table = "";
+		std::vector<std::string> columns;
+		std::string where = "";
+	};
 
 public:
 	DatabaseManager();
@@ -12,6 +31,8 @@ public:
 	mysqlx::Schema getSchema();
 
 	void printTable(mysqlx::Table table);
+	std::shared_ptr<DatabaseManager::IntermediateQuery> query(std::string table_);
+
 
 	void test() {
 		mysqlx::Session sess("localhost", 33060, "user", "password");
@@ -29,7 +50,6 @@ public:
 
 
 	}
-
 
 private:
 	std::string schema;

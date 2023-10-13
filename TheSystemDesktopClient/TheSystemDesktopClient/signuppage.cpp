@@ -1,5 +1,6 @@
 #include "signuppage.h"
 #include "ui_signuppage.h"
+#include "packetmanager.h"
 
 SignUpPage::SignUpPage(QWidget *parent) :
     Page(parent),
@@ -27,6 +28,8 @@ SignUpPage::SignUpPage(QWidget *parent) :
             ui->errorLabel->setText("Some fields were left blank");
             return;
         }
+
+        PacketManager::getInstance()->sendSignUpPacket(ui->usernameField->text(), ui->passwordField->text(), ui->firstNameField->text(), ui->lastNameField->text());
 
         //TODO: check username availability from server (move this out of here to change page in reaction to RSLT packet)
 

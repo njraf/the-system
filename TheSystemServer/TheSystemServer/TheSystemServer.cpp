@@ -112,6 +112,7 @@ int main() {
 
     // connect to the database
     try {
+        std::cout << "Connecting to database" << std::endl;
         const int DB_PORT = 33060;
         session = std::make_shared<mysqlx::Session>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword));
         session->sql(mysqlx::string("USE ") + mysqlx::string("the_system") + mysqlx::string(";")).execute();
@@ -218,8 +219,8 @@ int main() {
         // execute request
         if ("SNIN" == packetType) {
             requestHandler.resolveSignIn(buff, sock);
-        } else if ("" == packetType) {
-
+        } else if ("SNUP" == packetType) {
+            requestHandler.resolveSignUp(buff, sock);
         } else if ("" == packetType) {
 
         } else if ("" == packetType) {

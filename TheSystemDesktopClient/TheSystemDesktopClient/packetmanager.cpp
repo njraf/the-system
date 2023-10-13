@@ -146,8 +146,8 @@ void PacketManager::run() {
             memcpy(&val32, packetPtr, sizeof(uint32_t));
             bool success = static_cast<bool>(ntohl(val32));
             packetPtr += sizeof(uint32_t);
-            char message[64] = "";
-            memcpy(message, packetPtr, 64);
+            char message[STD_STRING_LENGTH] = "";
+            memcpy(message, packetPtr, STD_STRING_LENGTH);
             qDebug() << "Read" << bytesRead << "bytes\nPacket type: " << packetType << "\nSuccess: " << success << "\nMessage:" << message;
             emit receivedResult(success, QString(message));
         }
@@ -218,10 +218,10 @@ void PacketManager::sendSignInPacket(QString username, QString password) const {
     uint8_t packet[MTU];
     memset(packet, 0, MTU);
     uint8_t *packetPtr = packet + HEADER_SIZE;
-    memcpy(packetPtr, username.toStdString().c_str(), 64);
-    packetPtr += 64;
-    memcpy(packetPtr, password.toStdString().c_str(), 64);
-    packetPtr += 64;
+    memcpy(packetPtr, username.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
+    memcpy(packetPtr, password.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
 
     packHeader(packet, "SNIN");
 
@@ -234,3 +234,28 @@ void PacketManager::sendSignInPacket(QString username, QString password) const {
     }
 }
 
+void PacketManager::sendSignUpPacket(QString username, QString password, QString firstName, QString lastName) const {
+    qDebug() << "Sending sign up packet";
+
+    uint8_t packet[MTU];
+    memset(packet, 0, MTU);
+    uint8_t *packetPtr = packet + HEADER_SIZE;
+    memcpy(packetPtr, username.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
+    memcpy(packetPtr, password.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
+    memcpy(packetPtr, firstName.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
+    memcpy(packetPtr, lastName.toStdString().c_str(), STD_STRING_LENGTH);
+    packetPtr += STD_STRING_LENGTH;
+
+    packHeader(packet, "SNUP");
+
+    // send
+    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    qDebug() << "Bytes wrote" << bytesWrote;
+    if (-1 == bytesWrote) {
+        qDebug() << "Send error";
+        errno = 0;
+    }
+}

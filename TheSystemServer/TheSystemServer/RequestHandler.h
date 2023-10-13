@@ -13,6 +13,7 @@ public:
 
 	bool verifyHeader(uint8_t *buff, std::string &packetType);
 	void resolveSignIn(uint8_t *buff, SOCKET sock);
+	void resolveSignUp(uint8_t *buff, SOCKET sock);
 
 
 private:

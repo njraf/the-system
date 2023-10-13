@@ -16,12 +16,25 @@ void readPacketHeader(uint8_t *buff, PacketHeader &header) {
     header.crc = ntohl(*buffPtr);
 }
 
-void readSigninPacket(uint8_t *buff, SignInPacket &packet) {
+void readSignInPacket(uint8_t *buff, SignInPacket &packet) {
     uint8_t *buffPtr = buff + sizeof(PacketHeader);
     memcpy(packet.username, buffPtr, sizeof(packet.username));
     buffPtr += sizeof(packet.username);
     memcpy(packet.password, buffPtr, sizeof(packet.password));
     buffPtr += sizeof(packet.password);
+    std::cout << "username " << packet.username << " password " << packet.password << std::endl;
+}
+
+void readSignUpPacket(uint8_t *buff, SignUpPacket &packet) {
+    uint8_t *buffPtr = buff + sizeof(PacketHeader);
+    memcpy(packet.username, buffPtr, sizeof(packet.username));
+    buffPtr += sizeof(packet.username);
+    memcpy(packet.password, buffPtr, sizeof(packet.password));
+    buffPtr += sizeof(packet.password);
+    memcpy(packet.firstName, buffPtr, sizeof(packet.firstName));
+    buffPtr += sizeof(packet.firstName);
+    memcpy(packet.lastName, buffPtr, sizeof(packet.lastName));
+    buffPtr += sizeof(packet.lastName);
 }
 
 

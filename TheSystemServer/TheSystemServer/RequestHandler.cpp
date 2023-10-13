@@ -1,5 +1,5 @@
 #include "RequestHandler.h"
-#include "SignInDAO.h"
+#include "UsersDAO.h"
 
 #include <iostream>
 
@@ -33,15 +33,16 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 	readPacketHeader(buff, header);
 
 	SignInPacket packet;
-	readSigninPacket(buff, packet);
+	readSignInPacket(buff, packet);
 
 	std::string username(packet.username);
 	std::string password(packet.password);
 
-	ResultPacket resultPacket;
+	ResultPacket resultPacket{};
 
 	// check if username exists in the database
-	SignInDAO signInDAO(databaseManager);
+	UsersDAO usersDAO(databaseManager);
+	resultPacket.succcess = usersDAO.isValidSignInAttempt(username, password);
 
 	// generate new session ID
 	if (0 == header.sessionID) {
@@ -49,12 +50,11 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 	}
 	strncpy_s(header.packetType, sizeof(header.packetType), "RSLT", 4);
 
-	//TODO: temp for testing
-	resultPacket.succcess = true;
-	std::string msg = "Hello Message";
-	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
+	// set result message
+	std::string msg = resultPacket.succcess ? "Please wait while we sign you in" : "Username or password were not recognized";
+	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length()); 
 
-	// create success/fail result message
+	// create success/fail result packet
 	uint8_t responseBuff[MTU];
 	memset(responseBuff, 0, sizeof(responseBuff));
 	packResultPacket(responseBuff, resultPacket);
@@ -62,4 +62,17 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 
 	// send response
 	send(sock, (char *)responseBuff, sizeof(responseBuff), 0);
+}
+
+void RequestHandler::resolveSignUp(uint8_t *buff, SOCKET sock) {
+	PacketHeader header;
+	readPacketHeader(buff, header);
+
+	SignUpPacket packet;
+	readSignUpPacket(buff, packet);
+
+	std::string username(packet.username);
+	std::string password(packet.password);
+	std::string firstName(packet.firstName);
+	std::string lastName(packet.lastName);
 }

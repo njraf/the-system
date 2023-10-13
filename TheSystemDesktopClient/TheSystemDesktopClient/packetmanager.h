@@ -26,6 +26,7 @@ public:
 
     // send functions
     void sendSignInPacket(QString username, QString password) const;
+    void sendSignUpPacket(QString username, QString password, QString firstName, QString lastName) const;
 
 
 protected:
@@ -35,6 +36,7 @@ private:
     static PacketManager *instance;
     static constexpr int HEADER_SIZE = 28;
     static constexpr int MTU = 1500;
+    static constexpr int STD_STRING_LENGTH = 64;
 
     QHostAddress loadBalancerHost;
     QHostAddress desktopClientHost;

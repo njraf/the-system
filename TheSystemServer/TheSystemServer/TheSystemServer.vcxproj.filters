@@ -27,7 +27,7 @@
     <ClCompile Include="RequestHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SignInDAO.cpp">
+    <ClCompile Include="UsersDAO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PacketFormat.cpp">
@@ -44,7 +44,7 @@
     <ClInclude Include="RequestHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SignInDAO.h">
+    <ClInclude Include="UsersDAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PacketFormats.h">

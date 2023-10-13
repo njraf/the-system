@@ -14,19 +14,29 @@ typedef struct {
 } PacketHeader;
 
 typedef struct {
+	uint32_t succcess;
+	char message[MAX_STR_LEN];
+} ResultPacket;
+
+typedef struct {
 	char username[MAX_STR_LEN];
 	char password[MAX_STR_LEN];
 } SignInPacket;
 
 typedef struct {
-	uint32_t succcess;
-	char message[MAX_STR_LEN];
-} ResultPacket;
+	char username[MAX_STR_LEN];
+	char password[MAX_STR_LEN];
+	char firstName[MAX_STR_LEN];
+	char lastName[MAX_STR_LEN];
+} SignUpPacket;
+
+
 
 // unpack //
 
 void readPacketHeader(uint8_t *buff, PacketHeader &header);
-void readSigninPacket(uint8_t *buff, SignInPacket &packet);
+void readSignInPacket(uint8_t *buff, SignInPacket &packet);
+void readSignUpPacket(uint8_t *buff, SignUpPacket &packet);
 
 
 // pack //
