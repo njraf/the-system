@@ -8,7 +8,7 @@ constexpr size_t MAX_STR_LEN = 64;
 
 typedef struct {
 	char clientIP[16];
-	char packetType[5];
+	char packetType[4];
 	uint32_t sessionID;
 	uint32_t crc;
 } PacketHeader;

@@ -57,20 +57,22 @@ DatabaseManager::IntermediateQuery::IntermediateQuery(DatabaseManager *dbm_, std
 
 std::vector<std::vector<mysqlx::Value>> DatabaseManager::IntermediateQuery::execute() {
     // construct query
-    std::string query = "SELECT";
+    std::string query = "SELECT ";
     if (columns.empty()) {
         //TODO: select all columns. this implies that select() is not necessary
-        query += " *";
+        query += "*";
     } else {
-        for (std::string c : columns) {
-            query += " " + c;
+        for (std::string col : columns) {
+            query += col + ",";
         }
+        query.pop_back();
     }
 
     query += " FROM " + table;
 
 
     query += ";";
+    //std::cout << "Query: " << query << std::endl;
     mysqlx::SqlResult result = dbm->session->sql(query).execute();
 
     // construct results
@@ -92,7 +94,7 @@ std::map<std::string, std::vector<std::string>> DatabaseManager::IntermediateQue
     return std::map<std::string, std::vector<std::string>>();
 }
 
-DatabaseManager::IntermediateQuery* DatabaseManager::IntermediateQuery::select(std::vector<std::string> columns_) {
+DatabaseManager::IntermediateQuery* DatabaseManager::IntermediateQuery::select(const std::vector<std::string> &columns_) {
     columns = columns_;
     return this;
 }

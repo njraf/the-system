@@ -48,7 +48,7 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 	if (0 == header.sessionID) {
 		//TODO: generate a new session ID
 	}
-	strncpy_s(header.packetType, sizeof(header.packetType), "RSLT", 4);
+	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
 
 	// set result message
 	std::string msg = resultPacket.succcess ? "Please wait while we sign you in" : "Username or password were not recognized";

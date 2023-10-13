@@ -15,7 +15,7 @@ private:
 		~IntermediateQuery() = default;
 		std::vector<std::vector<mysqlx::Value>> execute();
 		std::map<std::string, std::vector<std::string>> executeAsMap();
-		DatabaseManager::IntermediateQuery* select(std::vector<std::string> columns_ = {});
+		DatabaseManager::IntermediateQuery* select(const std::vector<std::string> &columns_ = {});
 	private:
 		DatabaseManager *dbm;
 		std::string table = "";

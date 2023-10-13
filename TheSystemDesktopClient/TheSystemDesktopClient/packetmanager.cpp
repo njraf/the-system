@@ -203,12 +203,12 @@ void PacketManager::packHeader(uint8_t *buff, std::string type) const {
     memcpy(buffPtr, type.c_str(), 4);
     buffPtr += 4;
     uint32_t val32 = htonl(sessionID);
-    memcpy(buffPtr, &val32, 4);
-    buffPtr += 4;
+    memcpy(buffPtr, &val32, sizeof(uint32_t));
+    buffPtr += sizeof(uint32_t);
     //TODO: crc below here
     val32 = htonl(0);
-    memcpy(buffPtr, &val32, 4);
-    buffPtr += 4;
+    memcpy(buffPtr, &val32, sizeof(uint32_t));
+    buffPtr += sizeof(uint32_t);
 }
 
 void PacketManager::sendSignInPacket(QString username, QString password) const {

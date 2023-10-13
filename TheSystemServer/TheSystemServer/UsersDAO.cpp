@@ -23,10 +23,9 @@ bool UsersDAO::userExists(const std::string &username) const {
 
 bool UsersDAO::isValidSignInAttempt(const std::string &username, const std::string &password) const {
 	try {
-		std::vector<std::vector<mysqlx::Value>> result = databaseManager->query("users")->select()->execute();
+		std::vector<std::vector<mysqlx::Value>> result = databaseManager->query("users")->select({"username", "password"})->execute();
 		for (auto row : result) {
-			std::cout << "Comparing " << username << " = " << row[3].get<mysqlx::string>() << " | " << password << " = " << row[4].get<mysqlx::string>() << std::endl;
-			if ((username == row[3].get<mysqlx::string>()) && (password == row[4].get<mysqlx::string>())) {
+			if ((username == row[0].get<mysqlx::string>()) && (password == row[1].get<mysqlx::string>())) {
 				return true;
 			}
 		}
