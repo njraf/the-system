@@ -16,7 +16,7 @@ bool UsersDAO::userExists(const std::string &username) const {
 			}
 		}
 	} catch (std::exception e) {
-		std::cout << "Exception: " << e.what() << std::endl;
+		std::cout << "User Exists Exception: " << e.what() << std::endl;
 	}
 	return false;
 }
@@ -30,8 +30,17 @@ bool UsersDAO::isValidSignInAttempt(const std::string &username, const std::stri
 			}
 		}
 	} catch (std::exception e) {
-		std::cout << "Exception: " << e.what() << std::endl;
+		std::cout << "Signin Attempt Exception: " << e.what() << std::endl;
 	}
 	return false;
 }
 
+bool UsersDAO::createUser(const std::string &firstName, const std::string &lastName, const std::string &username, const std::string &password) {
+	try {
+		databaseManager->query("users")->insert({firstName, lastName, username, password}, {"first_name", "last_name", "username", "password"})->execute();
+		return true;
+	} catch (std::exception e) {
+		std::cout << "Create User Exception: " << e.what() << std::endl;
+	}
+	return false;
+}

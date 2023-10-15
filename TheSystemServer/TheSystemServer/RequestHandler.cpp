@@ -52,7 +52,7 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 
 	// set result message
 	std::string msg = resultPacket.success ? "Please wait while we sign you in" : "Username or password were not recognized";
-	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length()); 
+	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
 
 	// create success/fail result packet
 	uint8_t responseBuff[MTU];
@@ -75,4 +75,37 @@ void RequestHandler::resolveSignUp(uint8_t *buff, SOCKET sock) {
 	std::string password(packet.password);
 	std::string firstName(packet.firstName);
 	std::string lastName(packet.lastName);
+
+	UsersDAO usersDAO(databaseManager);
+	ResultPacket resultPacket{};
+	std::string msg = "";
+
+	if (usersDAO.userExists(username)) {
+		// user already exists
+		resultPacket.success = 0;
+		msg = "This username is already taken";
+	} else if (usersDAO.createUser(firstName, lastName, username, password)) {
+		// user does not exist and new user was created successfully
+		resultPacket.success = 1;
+		msg = "User was created successfully";
+	} else { // failed to create user
+		resultPacket.success = 0;
+		msg = "Failed to create a new account";
+	}
+	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
+
+	// generate new session ID
+	if (0 == header.sessionID) {
+		//TODO: generate a new session ID
+	}
+	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
+
+	// create success/fail result packet
+	uint8_t responseBuff[MTU];
+	memset(responseBuff, 0, sizeof(responseBuff));
+	packResultPacket(responseBuff, resultPacket);
+	packHeader(responseBuff, header);
+
+	// send response
+	send(sock, (char *)responseBuff, sizeof(responseBuff), 0);
 }

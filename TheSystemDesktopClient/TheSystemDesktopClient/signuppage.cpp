@@ -1,6 +1,7 @@
 #include "signuppage.h"
 #include "ui_signuppage.h"
 #include "packetmanager.h"
+#include "pagenavigator.h"
 
 SignUpPage::SignUpPage(QWidget *parent) :
     Page(parent),
@@ -8,6 +9,10 @@ SignUpPage::SignUpPage(QWidget *parent) :
 {
     ui->setupUi(this);
     setObjectName("signUpPage");
+
+    const PageNavigator *navigator = PageNavigator::getInstance();
+    const PacketManager *packetManager = PacketManager::getInstance();
+    connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::SIGN_UP) : ui->errorLabel->setText(message); });
 
     connect(ui->finishButton, &QPushButton::clicked, this, [=]() {
         ui->errorLabel->clear();

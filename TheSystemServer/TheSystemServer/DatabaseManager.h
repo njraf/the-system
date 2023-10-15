@@ -15,12 +15,11 @@ private:
 		~IntermediateQuery() = default;
 		std::vector<std::vector<mysqlx::Value>> execute();
 		std::map<std::string, std::vector<std::string>> executeAsMap();
-		DatabaseManager::IntermediateQuery* select(const std::vector<std::string> &columns_ = {});
+		DatabaseManager::IntermediateQuery *select(const std::vector<std::string> &columns_ = {});
+		DatabaseManager::IntermediateQuery *insert(const std::vector<std::string> &values_, const std::vector<std::string> &columns_ = {});
 	private:
 		DatabaseManager *dbm;
-		std::string table = "";
-		std::vector<std::string> columns;
-		std::string where = "";
+		std::vector<std::string> query;
 	};
 
 public:

@@ -51,29 +51,19 @@ std::shared_ptr<DatabaseManager::IntermediateQuery> DatabaseManager::query(std::
 
 DatabaseManager::IntermediateQuery::IntermediateQuery(DatabaseManager *dbm_, std::string table_)
     : dbm(dbm_)
-    , table(table_)
 {
+    query.push_back(table_);
 }
 
 std::vector<std::vector<mysqlx::Value>> DatabaseManager::IntermediateQuery::execute() {
-    // construct query
-    std::string query = "SELECT ";
-    if (columns.empty()) {
-        //TODO: select all columns. this implies that select() is not necessary
-        query += "*";
-    } else {
-        for (std::string col : columns) {
-            query += col + ",";
-        }
-        query.pop_back();
+    std::string queryString = "";
+    for (std::string s : query) {
+        queryString += (s + " ");
     }
+    queryString += ";";
 
-    query += " FROM " + table;
-
-
-    query += ";";
-    //std::cout << "Query: " << query << std::endl;
-    mysqlx::SqlResult result = dbm->session->sql(query).execute();
+    //std::cout << "Query: " << queryString << std::endl;
+    mysqlx::SqlResult result = dbm->session->sql(queryString).execute();
 
     // construct results
     std::vector<mysqlx::Row> rows = result.fetchAll();
@@ -95,6 +85,44 @@ std::map<std::string, std::vector<std::string>> DatabaseManager::IntermediateQue
 }
 
 DatabaseManager::IntermediateQuery* DatabaseManager::IntermediateQuery::select(const std::vector<std::string> &columns_) {
-    columns = columns_;
+    query.insert(query.begin(), "FROM");
+    for (size_t i = 0; i < columns_.size(); i++) {
+        std::string value = columns_[i];
+        if ((i + 1) != columns_.size()) {
+            value += ",";
+        }
+        query.insert(query.begin() + i, value);
+    }
+
+    if (columns_.empty()) {
+        query.insert(query.begin(), "*");
+    }
+    query.insert(query.begin(), "SELECT");
+    return this;
+}
+
+DatabaseManager::IntermediateQuery *DatabaseManager::IntermediateQuery::insert(const std::vector<std::string> &values_, const std::vector<std::string> &columns_) {
+    query.insert(query.begin(), {"INSERT", "INTO"});
+    if (!columns_.empty()) {
+        query.push_back("(");
+        for (size_t i = 0; i < columns_.size(); i++) {
+            std::string value = columns_[i];
+            if ((i + 1) != columns_.size()) {
+                value += ",";
+            }
+            query.push_back(value);
+        }
+        query.push_back(")");
+        query.push_back("VALUES");
+        query.push_back("(");
+        for (size_t i = 0; i < values_.size(); i++) {
+            std::string value = "\"" + values_[i] + "\"";
+            if ((i + 1) != values_.size()) {
+                value += ",";
+            }
+            query.push_back(value);
+        }
+        query.push_back(")");
+    }
     return this;
 }
