@@ -20,7 +20,7 @@ SignInPage::SignInPage(QWidget *parent) :
     connect(ui->signupButton, &QPushButton::clicked, this, [=]() { navigator->navigate(PageName::SIGN_UP); });
 
     // result packet received. change page or display failed login message                                         //TODO: change to home page when created
-    connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::SIGN_UP) : ui->statusLabel->setText(message); });
+    connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::HOME) : ui->statusLabel->setText(message); });
 }
 
 SignInPage::~SignInPage()

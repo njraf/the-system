@@ -51,21 +51,25 @@ PacketManager::PacketManager(QObject *parent)
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (-1 == sock) {
         qDebug() << "Bad sock fd";
+        return;
     }
     struct sockaddr_in responseAddr;
     responseAddr.sin_family = AF_INET;
     responseAddr.sin_port = RESPONSE_RX_PORT;
     if (1 != inet_pton(AF_INET, desktopClientHost.toString().toStdString().c_str(), &(responseAddr.sin_addr))) {
         qDebug() << "Response inet_pton error";
+        return;
     }
     if (-1 == bind(sock, (struct sockaddr*)&responseAddr, sizeof(responseAddr))) {
         qDebug() << "Bind error";
+        return;
     }
 
     requestAddr.sin_family = AF_INET;
     requestAddr.sin_port = REQUEST_TX_PORT;
     if (-1 == inet_pton(AF_INET, loadBalancerHost.toString().toStdString().c_str(), &(requestAddr.sin_addr))) {
         qDebug() << "Request inet_pton error";
+        return;
     }
 #endif
 }

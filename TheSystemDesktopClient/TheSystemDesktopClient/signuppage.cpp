@@ -12,8 +12,11 @@ SignUpPage::SignUpPage(QWidget *parent) :
 
     const PageNavigator *navigator = PageNavigator::getInstance();
     const PacketManager *packetManager = PacketManager::getInstance();
-    connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::SIGN_UP) : ui->errorLabel->setText(message); });
 
+    // result packet received. change page to home or show error message.
+    connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::HOME) : ui->errorLabel->setText(message); });
+
+    // send sign up packet
     connect(ui->finishButton, &QPushButton::clicked, this, [=]() {
         ui->errorLabel->clear();
         const bool confirmedPassword = (ui->passwordField->text() == ui->confirmPasswordField->text());
@@ -34,17 +37,7 @@ SignUpPage::SignUpPage(QWidget *parent) :
             return;
         }
 
-        PacketManager::getInstance()->sendSignUpPacket(ui->usernameField->text(), ui->passwordField->text(), ui->firstNameField->text(), ui->lastNameField->text());
-
-        //TODO: check username availability from server (move this out of here to change page in reaction to RSLT packet)
-
-
-        //TODO: create account with SNUP packet
-
-
-        //TODO: wait for success RSLT packet (move this out of here to change page in reaction to RSLT packet)
-        //TODO: change page to home screen
-
+        packetManager->sendSignUpPacket(ui->usernameField->text(), ui->passwordField->text(), ui->firstNameField->text(), ui->lastNameField->text());
     });
 }
 

@@ -5,7 +5,8 @@
 
 enum PageName {
     SIGN_IN,
-    SIGN_UP
+    SIGN_UP,
+    HOME
 };
 
 class Page : public QWidget
