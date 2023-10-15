@@ -1,6 +1,22 @@
 #include "PacketFormats.h"
 #include "sockets.h"
 
+void printHex(uint8_t *buff, size_t size) {
+    for (int i = 0; i < size; i++) {
+        if ((i % 16) == 0) {
+            printf("%02X | ", i);
+        }
+        if ((i % 16) == 8) {
+            printf("\t");
+        }
+        printf("%02X ", buff[i]);
+        if ((i % 16) == 15) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
 // unpack //
 
 void readPacketHeader(uint8_t *buff, PacketHeader &header) {
@@ -51,7 +67,8 @@ void packHeader(uint8_t *buff, const PacketHeader &header) {
 
 void packResultPacket(uint8_t *buff, const ResultPacket &packet) {
     uint8_t *buffPtr = buff + sizeof(PacketHeader);
-    *buffPtr = htonl(packet.succcess);
-    buffPtr += sizeof(packet.succcess);
+    uint32_t val32 = htonl(packet.success);
+    memcpy(buffPtr, &val32, sizeof(val32));
+    buffPtr += sizeof(packet.success);
     memcpy(buffPtr, packet.message, sizeof(packet.message));
 }

@@ -14,7 +14,7 @@ typedef struct {
 } PacketHeader;
 
 typedef struct {
-	uint32_t succcess;
+	uint32_t success;
 	char message[MAX_STR_LEN];
 } ResultPacket;
 
