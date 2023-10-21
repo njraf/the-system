@@ -16,13 +16,17 @@ Dependencies:
 
 [Server]
 - create a credentials.txt with the database username and password on lines one and two respectively
-	- place this in the same folder as the server source files
+	- place this in the same folder as the server source files, or the executable if the project is deployed
 - MySQL connector/c++ 8.1.0
 	- https://dev.mysql.com/downloads/connector/cpp/
 	- Windows file path C:\Program Files\MySQL\mysql-connector-c++-8.1.0-winx64
+	- Linux filepath "/usr/local/lib/mysql-connector-c++-8.1.0-linux-glibc2.28-x86_64bit"
 	- Linux compile options: -I /path/to/connector/include -L /path/to/connector/lib64 -lmysqlcppconn8
 	- add mysqlcppconn8-2-vs14.dll alongside source files (or the executable if the project is deployed) to use the api
-	- create a file alongside source files (or the executable if the project is deployed) called credentials.txt with the username on the first line and password on the second line
+		- On Linux:
+			- type "locate libmysqlcppconn8" to find the path to the shared library
+			- optionally, create a symlink to the shared library
+			- add the filepath that contains the shared library (of the symlink to it) to the LD_LIBRARY_PATH in .bashrc
 	
 [Load Balancer]
 - none

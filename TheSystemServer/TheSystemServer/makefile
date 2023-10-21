@@ -1,7 +1,13 @@
 #!/bin/bash
 
+CC=g++
+MYSQL_CPPCON_DIR = /usr/local/lib/mysql-connector-c++-8.1.0-linux-glibc2.28-x86-64bit
+CPPFLAGS =-I $(MYSQL_CPPCON_DIR)/include -L $(MYSQL_CPPCON_DIR)/lib64
+LDLIBS = -lmysqlcppconn8 
+CXXFLAGS = -std=c++17
+
+
 all:
-	MYSQL_CPPCONN_DIR=/usr/local/lib/mysqlcppconn/usr
-	@g++ -I/usr/local/lib/mysqlcppconn/usr/include/mysql-cppconn-8 -L/usr/local/lib/mysqlcppconn/usr/lib/x86_64-linux-gnu -lmysqlcppconn8 -o server TheSystemServer.cpp sockets.cpp DatabaseManager.cpp RequestHandler.cpp UsersDAO.cpp PacketFormat.cpp
+	$(CC) $(CXXFLAGS) $(CPPFLAGS) -o server TheSystemServer.cpp sockets.cpp DatabaseManager.cpp RequestHandler.cpp UsersDAO.cpp PacketFormat.cpp $(LDLIBS)
 clean:
 	@rm server

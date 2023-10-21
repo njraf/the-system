@@ -117,7 +117,7 @@ int main() {
         session = std::make_shared<mysqlx::Session>(DATABASE_IP, DB_PORT, std::string(dbUsername), std::string(dbPassword));
         session->sql(mysqlx::string("USE ") + mysqlx::string("the_system") + mysqlx::string(";")).execute();
     } catch (std::exception e) {
-        std::cout << "Error: " << e.what() << std::endl;
+        std::cout << "Error: Could not connect to database. " << e.what() << std::endl;
         cleanup();
         return 1;
     }
