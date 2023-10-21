@@ -66,7 +66,7 @@ bool loadAddresses() {
 	return true;
 }
 
-bool createServerSocket(SOCKET &serverSocket) {
+bool createServerSocket(socket_t &serverSocket) {
 	// listen for servers trying to connect over TCP
 	serverSocket = createSocket(AF_INET, SOCK_STREAM, 0);
 	if (!isValidSocket(serverSocket)) {
@@ -100,7 +100,7 @@ bool createServerSocket(SOCKET &serverSocket) {
 	return true;
 }
 
-bool createClientSocket(SOCKET &clientSocket) {
+bool createClientSocket(socket_t &clientSocket) {
 	// communicate with clients over UDP
 	clientSocket = createSocket(AF_INET, SOCK_DGRAM, 0);
 	if (!isValidSocket(clientSocket)) {
@@ -142,7 +142,7 @@ int main() {
 	}
 
 
-	SOCKET serverSocket = -1;
+	socket_t serverSocket = -1;
 	if (!createServerSocket(serverSocket)) {
 		closeSocket(serverSocket);
 		cleanup();
@@ -150,7 +150,7 @@ int main() {
 	}
 
 
-	SOCKET clientSocket = -1;
+	socket_t clientSocket = -1;
 	if (!createClientSocket(clientSocket)) {
 		closeSocket(serverSocket);
 		closeSocket(clientSocket);
@@ -158,7 +158,7 @@ int main() {
 		return 1;
 	}
 
-	SOCKET maxFD = clientSocket;
+	socket_t maxFD = clientSocket;
 
 	fd_set mainSet;
 	FD_ZERO(&mainSet);
@@ -183,7 +183,7 @@ int main() {
 			// accept connections
 			struct sockaddr_storage theirAddr;
 			socklen_t theirSize = sizeof(theirAddr);
-			SOCKET newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
+			socket_t newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
 			if (INVALID_SOCKET == newSocket) {
 				std::cout << "Server accept failed" << std::endl;
 				continue;

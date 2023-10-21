@@ -10,7 +10,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#define SOCK socket_t
+#define socket_t SOCKET
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <sys/types.h>

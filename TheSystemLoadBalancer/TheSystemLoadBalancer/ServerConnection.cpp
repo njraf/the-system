@@ -1,6 +1,6 @@
 #include "ServerConnection.h"
 
-ServerConnection::ServerConnection(SOCKET sock_, struct sockaddr_storage addrStorage_, socklen_t sockLen_) 
+ServerConnection::ServerConnection(socket_t sock_, struct sockaddr_storage addrStorage_, socklen_t sockLen_) 
 	: sock(sock_)
 	, addrStorage(addrStorage_)
 	, sockLen(sockLen_)
@@ -10,7 +10,7 @@ ServerConnection::ServerConnection(SOCKET sock_, struct sockaddr_storage addrSto
 }
 
 
-SOCKET ServerConnection::getSocket() const {
+socket_t ServerConnection::getSocket() const {
 	return sock;
 }
 

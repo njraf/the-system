@@ -10,6 +10,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#define socket_t SOCKET
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <sys/types.h>
@@ -20,23 +21,23 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
-#define SOCKET int
+#define socket_t int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
-#deifne USHORT unsigned short
-#deifne ADDRESS_FAMILY unsigned short
+#define USHORT unsigned short
+#define ADDRESS_FAMILY unsigned short
 #endif
 
 constexpr int MTU = 1500;
 
-SOCKET createSocket(int domain, int type, int protocol);
+socket_t createSocket(int domain, int type, int protocol);
 
-void closeSocket(SOCKET sock);
+void closeSocket(socket_t sock);
 
 int getSocketErrno();
 
 void printErrorText();
 
-bool isValidSocket(SOCKET sock);
+bool isValidSocket(socket_t sock);
 
 int makeSockaddr(struct sockaddr_in &addr, ADDRESS_FAMILY family, const char *address, USHORT port);

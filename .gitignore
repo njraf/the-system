@@ -4,6 +4,9 @@ addresses.csv
 # the server executable
 server
 
+# the load balancer executable
+loadbalancer
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,visualstudio,qt,qtcreator
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,visualstudio,qt,qtcreator
