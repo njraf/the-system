@@ -28,7 +28,7 @@ bool RequestHandler::verifyHeader(uint8_t *buff, std::string &packetType) {
 	return true;
 }
 
-void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
+void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
 	readPacketHeader(buff, header);
 
@@ -64,7 +64,7 @@ void RequestHandler::resolveSignIn(uint8_t *buff, SOCKET sock) {
 	send(sock, (char *)responseBuff, sizeof(responseBuff), 0);
 }
 
-void RequestHandler::resolveSignUp(uint8_t *buff, SOCKET sock) {
+void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
 	readPacketHeader(buff, header);
 

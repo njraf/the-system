@@ -134,7 +134,7 @@ int main() {
     
 
     // connect to load balancer over TCP
-    SOCKET sock = createSocket(AF_INET, SOCK_STREAM, 0);
+    socket_t sock = createSocket(AF_INET, SOCK_STREAM, 0);
     if (!isValidSocket(sock)) {
         std::cout << "Failed to create the socket" << std::endl;
         cleanup();

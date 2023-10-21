@@ -1,7 +1,7 @@
 
 #include "sockets.h"
 
-SOCKET createSocket(int domain, int type, int protocol) {
+socket_t createSocket(int domain, int type, int protocol) {
 #if defined(_WIN32)
 	WSADATA d;
 	static bool winsockInitialized = false;
@@ -18,7 +18,7 @@ SOCKET createSocket(int domain, int type, int protocol) {
 	return socket(domain, type, protocol);
 }
 
-void closeSocket(SOCKET sock) {
+void closeSocket(socket_t sock) {
 #if defined(_WIN32)
 	closesocket(sock);
 #else
@@ -48,7 +48,7 @@ void printErrorText() {
 #endif
 }
 
-bool isValidSocket(SOCKET sock) {
+bool isValidSocket(socket_t sock) {
 	return (INVALID_SOCKET != sock);
 }
 

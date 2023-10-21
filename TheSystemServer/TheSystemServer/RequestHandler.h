@@ -12,8 +12,8 @@ public:
 	~RequestHandler() = default;
 
 	bool verifyHeader(uint8_t *buff, std::string &packetType);
-	void resolveSignIn(uint8_t *buff, SOCKET sock);
-	void resolveSignUp(uint8_t *buff, SOCKET sock);
+	void resolveSignIn(uint8_t *buff, socket_t sock);
+	void resolveSignUp(uint8_t *buff, socket_t sock);
 
 
 private:
