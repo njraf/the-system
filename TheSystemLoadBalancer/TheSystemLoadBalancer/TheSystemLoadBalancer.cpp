@@ -66,10 +66,10 @@ bool loadAddresses() {
 	return true;
 }
 
-bool createServerSocket(socket_t &serverSocket) {
+bool createServerSocket(socket_t &loadBalancerSocket) {
 	// listen for servers trying to connect over TCP
-	serverSocket = createSocket(AF_INET, SOCK_STREAM, 0);
-	if (!isValidSocket(serverSocket)) {
+	loadBalancerSocket = createSocket(AF_INET, SOCK_STREAM, 0);
+	if (!isValidSocket(loadBalancerSocket)) {
 		std::cout << "Failed to create the server socket" << std::endl;
 		return false;
 	}
@@ -87,12 +87,12 @@ bool createServerSocket(socket_t &serverSocket) {
 		break;
 	}
 
-	if (SOCKET_ERROR == bind(serverSocket, (struct sockaddr *)&addr, sizeof(addr))) {
+	if (SOCKET_ERROR == bind(loadBalancerSocket, (struct sockaddr *)&addr, sizeof(addr))) {
 		std::cout << "Failed to bind the server socket" << std::endl;
 		return false;
 	}
 
-	if (SOCKET_ERROR == listen(serverSocket, 10)) {
+	if (SOCKET_ERROR == listen(loadBalancerSocket, 10)) {
 		std::cout << "Failed to listen on the server socket" << std::endl;
 		return false;
 	}
@@ -142,9 +142,9 @@ int main() {
 	}
 
 
-	socket_t serverSocket = -1;
-	if (!createServerSocket(serverSocket)) {
-		closeSocket(serverSocket);
+	socket_t loadBalancerSocket = -1;
+	if (!createServerSocket(loadBalancerSocket)) {
+		closeSocket(loadBalancerSocket);
 		cleanup();
 		return 1;
 	}
@@ -152,7 +152,7 @@ int main() {
 
 	socket_t clientSocket = -1;
 	if (!createClientSocket(clientSocket)) {
-		closeSocket(serverSocket);
+		closeSocket(loadBalancerSocket);
 		closeSocket(clientSocket);
 		cleanup();
 		return 1;
@@ -160,13 +160,14 @@ int main() {
 
 	socket_t maxFD = clientSocket;
 
-	fd_set mainSet;
-	FD_ZERO(&mainSet);
-	FD_SET(serverSocket, &mainSet);
-	FD_SET(clientSocket, &mainSet);
-
 	while (isRunning) {
-		fd_set readSet = mainSet;
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(loadBalancerSocket, &readSet);
+		FD_SET(clientSocket, &readSet);
+		for (const ServerConnection *s : serverSockets) {
+			FD_SET(s->getSocket(), &readSet);
+		}
 
 		struct timeval tv;
 		tv.tv_sec = SELECT_TIMEOUT_SEC;
@@ -179,11 +180,11 @@ int main() {
 		} else if (0 == ret) {
 			// timeout
 			continue;
-		} else if (FD_ISSET(serverSocket, &readSet)) {
+		} else if (FD_ISSET(loadBalancerSocket, &readSet)) {
 			// accept connections
 			struct sockaddr_storage theirAddr;
 			socklen_t theirSize = sizeof(theirAddr);
-			socket_t newSocket = accept(serverSocket, (struct sockaddr *)&theirAddr, &theirSize);
+			socket_t newSocket = accept(loadBalancerSocket, (struct sockaddr *)&theirAddr, &theirSize);
 			if (INVALID_SOCKET == newSocket) {
 				std::cout << "Server accept failed" << std::endl;
 				continue;
@@ -191,7 +192,6 @@ int main() {
 			std::cout << "New server accepted" << std::endl;
 
 			serverSockets.push_back(new ServerConnection(newSocket, theirAddr, theirSize));
-			FD_SET(newSocket, &mainSet);
 			maxFD = newSocket;
 		} else if (FD_ISSET(clientSocket, &readSet)) {
 			// request from client
@@ -225,15 +225,24 @@ int main() {
 			}
 		} else {
 			std::cout << "Receiving messages from servers" << std::endl;
-			for (const auto *s : serverSockets) {
+			std::vector<socket_t> socketsToRemove;
+			for (auto *s : serverSockets) {
 				if (FD_ISSET(s->getSocket(), &readSet)) {
 					// response from servers
 					uint8_t buff[MTU];
 					memset(buff, 0, sizeof(buff));
-					s->recvPacket(buff, sizeof(buff));
+					const int bytesRead = s->recvPacket(buff, sizeof(buff));
+
+					if (-100 == bytesRead) {
+						closeSocket(s->getSocket());
+						socketsToRemove.push_back(s->getSocket());
+						for (int i = 0; i < serverSockets.size() - 1; i++) {
+							maxFD = std::max(serverSockets[i]->getSocket(), serverSockets[i+1]->getSocket());
+						}
+						continue;
+					}
 
 					// send response to client
-
 					char clientIP[16] = "";
 					memcpy(clientIP, buff, 16);
 
@@ -257,14 +266,20 @@ int main() {
 					}
 					printf("Bytes wrote %d to IP %s\n", bytesWrote, clientIP);
 
-				}
-			}
-		}
-	}
+				} // if (FD_ISSET(s->getSocket(), &readSet))
+			} // foreach (server socket)
+
+			serverSockets.erase(std::remove_if(serverSockets.begin(), serverSockets.end(), [&socketsToRemove](ServerConnection *serverConn) { 
+				return (std::find_if(socketsToRemove.begin(), socketsToRemove.end(), [&serverConn](socket_t sock) { 
+					return (serverConn->getSocket() == sock ); 
+				}) != socketsToRemove.end()); 
+			}), serverSockets.end());
+		} // message from server
+	} // while (isRunning)
 
 
 
-	closeSocket(serverSocket);
+	closeSocket(loadBalancerSocket);
 	closeSocket(clientSocket);
 	
 	cleanup();

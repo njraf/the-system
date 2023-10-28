@@ -45,6 +45,7 @@ int ServerConnection::recvPacket(uint8_t *buff, int len) const {
 		std::cout << "Failed to read from a server" << std::endl;
 	} else if (0 == bytesRead) {
 		std::cout << "Server disconnected" << std::endl;
+		bytesRead = -100;
 	} else {
 		std::cout << "Server message: " << buff << std::endl;
 	}
