@@ -140,9 +140,13 @@ void PacketManager::run() {
             continue;
         }
 
+        PacketHeader packetHeader;
+        if (!unpackHeader(buff, packetHeader)) {
+            continue;
+        }
         uint8_t *packetPtr = buff + 16;
         char packetType[5] = "";
-        memcpy(packetType, packetPtr, 4);
+        memcpy(packetType, packetHeader.packetType, 4);
         packetType[4] = '\0';
         if ("RSLT" == QString(packetType)) {
             packetPtr = buff + 28;
@@ -163,43 +167,6 @@ void PacketManager::stop() {
     isRunning = false;
 }
 
-
-void PacketManager::sendTestPacket() {
-    qDebug() << "Sending message";
-
-    uint8_t packet[MTU];
-    uint8_t *packetPtr = packet;
-    memcpy(packetPtr, desktopClientHost.toString().toStdString().c_str(), 16);
-    packetPtr += 16;
-    std::string message = "Hello world";
-    memcpy(packetPtr, message.c_str(), (MTU - 16));
-
-    // use Qt sockets //
-
-//    QByteArray messageBytes = "asdzxc";
-//    auto byteswrote = sock->writeDatagram(messageBytes, loadBalancerHost, REQUEST_TX_PORT);
-//    //auto byteswrote = sock->write(message.c_str(), strlen(message.c_str()));
-//    sock->waitForBytesWritten();
-//    qDebug() << "Bytes wrote " << byteswrote;
-
-
-    // use Berkley sockets (works on linux) //
-    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
-    qDebug() << "Bytes wrote" << bytesWrote;
-    if (-1 == bytesWrote) {
-        qDebug() << "Send error";
-        errno = 0;
-    }
-}
-
-void PacketManager::readTestPacket() {
-    qDebug() << "Receiving packet";
-    //while (sock->hasPendingDatagrams()) {
-    //    QNetworkDatagram datagram = sock->receiveDatagram();
-    //    emit packetReceived(QString(datagram.data().data()));
-    //}
-}
-
 void PacketManager::packHeader(uint8_t *buff, std::string type) const {
     uint8_t *buffPtr = buff;
     memcpy(buffPtr, desktopClientHost.toString().toStdString().c_str(), 16);
@@ -213,6 +180,39 @@ void PacketManager::packHeader(uint8_t *buff, std::string type) const {
     val32 = htonl(0);
     memcpy(buffPtr, &val32, sizeof(uint32_t));
     buffPtr += sizeof(uint32_t);
+}
+
+bool PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
+    uint8_t *buffPtr = buff;
+    memcpy(header.ipAdderss, buffPtr, 16);
+    buffPtr += 16;
+    memcpy(header.packetType, buffPtr, 4);
+    buffPtr += 4;
+    uint32_t val32 = 0;
+    memcpy(&val32, buffPtr, sizeof(uint32_t));
+    header.sessionID = ntohl(val32);
+    buffPtr += sizeof(uint32_t);
+    memcpy(&val32, buffPtr, sizeof(uint32_t));
+    header.crc = ntohl(val32);
+    buffPtr += sizeof(uint32_t);
+
+    //TODO: check crc
+
+
+    // check that we recieved the correct session ID
+    if (0 == sessionID) {
+        sessionID = header.sessionID;
+    } else if (header.sessionID != sessionID) {
+        qDebug() << "ERROR: Packet with bad session ID received";
+        return false;
+    }
+
+    // check that the header IP address matches the one we sent
+    if (QString(header.ipAdderss) != desktopClientHost.toString()) {
+        qDebug() << "ERROR: The returned IP address of the received packet is different than our own";
+        return false;
+    }
+    return true;
 }
 
 void PacketManager::sendSignInPacket(QString username, QString password) const {
