@@ -225,7 +225,6 @@ int main() {
 			}
 		} else {
 			std::cout << "Receiving messages from servers" << std::endl;
-			std::vector<socket_t> socketsToRemove;
 			for (auto *s : serverSockets) {
 				if (FD_ISSET(s->getSocket(), &readSet)) {
 					// response from servers
@@ -233,11 +232,16 @@ int main() {
 					memset(buff, 0, sizeof(buff));
 					const int bytesRead = s->recvPacket(buff, sizeof(buff));
 
-					if (-100 == bytesRead) {
+					// socket has gone bad. close the connection and mark it for deletion.
+					if (SOCKET_ERROR == bytesRead) {
 						closeSocket(s->getSocket());
-						socketsToRemove.push_back(s->getSocket());
+						s->invalidateSocket();
 						for (int i = 0; i < serverSockets.size() - 1; i++) {
-							maxFD = std::max(serverSockets[i]->getSocket(), serverSockets[i+1]->getSocket());
+							// find the new max FD
+							const socket_t serverSock = serverSockets[i]->getSocket();
+							if (INVALID_SOCKET != serverSock) {
+								maxFD = std::max(serverSock, serverSockets[i + 1]->getSocket());
+							}
 						}
 						continue;
 					}
@@ -269,10 +273,13 @@ int main() {
 				} // if (FD_ISSET(s->getSocket(), &readSet))
 			} // foreach (server socket)
 
-			serverSockets.erase(std::remove_if(serverSockets.begin(), serverSockets.end(), [&socketsToRemove](ServerConnection *serverConn) { 
-				return (std::find_if(socketsToRemove.begin(), socketsToRemove.end(), [&serverConn](socket_t sock) { 
-					return (serverConn->getSocket() == sock ); 
-				}) != socketsToRemove.end()); 
+			// delete any closed sockets
+			serverSockets.erase(std::remove_if(serverSockets.begin(), serverSockets.end(), [](ServerConnection *serverConn) { 
+				const bool MATCH = (serverConn->getSocket() == INVALID_SOCKET);
+				if (MATCH) {
+					delete serverConn;
+				}
+				return MATCH;
 			}), serverSockets.end());
 		} // message from server
 	} // while (isRunning)

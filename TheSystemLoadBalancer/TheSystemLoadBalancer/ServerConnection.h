@@ -12,6 +12,7 @@ public:
 	struct sockaddr_storage getAddressStorage() const;
 	socklen_t getAddressLength() const;
 	int getActiveRequests() const;
+	void invalidateSocket();
 	
 	bool sendPacket(uint8_t *buff, int len);
 	int recvPacket(uint8_t *buff, int len) const;
