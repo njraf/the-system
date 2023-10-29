@@ -62,6 +62,8 @@ void packHeader(uint8_t *buff, const PacketHeader &header) {
     buffPtr += sizeof(header.packetType);
     *buffPtr = htonl(header.sessionID);
     buffPtr += sizeof(header.sessionID);
+
+    //TODO: do crc
     *buffPtr = htonl(header.crc);
 }
 

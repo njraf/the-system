@@ -3,6 +3,8 @@
 #include <iostream>
 #include <algorithm>
 
+std::map<Keyword, std::string> DatabaseManager::keywordToString = {{Keyword::NOW, "NOW()"}};
+
 DatabaseManager::DatabaseManager()
     : schema("")
 {
@@ -17,6 +19,10 @@ DatabaseManager::DatabaseManager(std::shared_ptr<mysqlx::Session> session_, std:
 
 DatabaseManager::~DatabaseManager() {
     
+}
+
+std::shared_ptr<mysqlx::Session> DatabaseManager::getSession() {
+    return session;
 }
 
 mysqlx::Schema DatabaseManager::getSchema() {
@@ -62,7 +68,7 @@ std::vector<std::vector<mysqlx::Value>> DatabaseManager::IntermediateQuery::exec
     }
     queryString += ";";
 
-    //std::cout << "Query: " << queryString << std::endl;
+    std::cout << "Query: " << queryString << std::endl;
     mysqlx::SqlResult result = dbm->session->sql(queryString).execute();
 
     // construct results

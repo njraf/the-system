@@ -1,5 +1,6 @@
 #include "RequestHandler.h"
 #include "UsersDAO.h"
+#include "SessionsDAO.h"
 
 #include <iostream>
 
@@ -21,7 +22,10 @@ bool RequestHandler::verifyHeader(uint8_t *buff, std::string &packetType) {
 	
 	//TODO: check session ID
 	if (0 < header.sessionID) {
-
+		SessionsDAO sessionsDao(databaseManager);
+		if (!sessionsDao.sessionExists(header.sessionID)) {
+			return false;
+		}
 	}
 
 
@@ -46,7 +50,12 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 
 	// generate new session ID
 	if (0 == header.sessionID) {
-		//TODO: generate a new session ID
+		SessionsDAO sessionsDao(databaseManager);
+		int newSessionID = sessionsDao.createSession(username);
+		if (-1 == newSessionID) {
+			return;
+		}
+		header.sessionID = newSessionID;
 	}
 	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
 

@@ -2,14 +2,14 @@
 
 #include "DatabaseManager.h"
 
-class SessionDAO {
+class SessionsDAO {
 
 public:
-	SessionDAO(std::shared_ptr<DatabaseManager> databaseManager_);
-	~SessionDAO() = default;
+	SessionsDAO(std::shared_ptr<DatabaseManager> databaseManager_);
+	~SessionsDAO() = default;
 
 	bool sessionExists(uint32_t sessionID) const;
-
+	int createSession(std::string username_) const;
 
 private:
 	std::shared_ptr<DatabaseManager> databaseManager;
