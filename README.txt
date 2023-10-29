@@ -33,12 +33,13 @@ Dependencies:
 		- add the filepath that contains the shared library (or the symlink to it) to the LD_LIBRARY_PATH environment variable in .bashrc
 - create a credentials.txt with the database username and password on lines one and two respectively
 	- place this in the same folder as the server source files, or the executable if the project is deployed
+- the mysql api uses c++17 feature and requires the server to be built using c++17 as a minimum requirement
 	
 [Load Balancer]
-- none
+- uses c++11 features
 
 [Qt client]
-- none
+- uses c++11 features
 
 Limitations:
 - The Qt client currently only works on Linux and will be cross platform in the future

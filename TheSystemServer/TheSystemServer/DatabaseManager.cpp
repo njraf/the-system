@@ -126,3 +126,9 @@ DatabaseManager::IntermediateQuery *DatabaseManager::IntermediateQuery::insert(c
     }
     return this;
 }
+
+DatabaseManager::IntermediateQuery *DatabaseManager::IntermediateQuery::where(std::string condition_) {
+    query.push_back("WHERE");
+    query.push_back(condition_);
+    return this;
+}

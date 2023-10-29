@@ -10,19 +10,19 @@ RequestHandler::RequestHandler(std::shared_ptr<DatabaseManager> databaseManager_
 
 bool RequestHandler::verifyHeader(uint8_t *buff, std::string &packetType) {
 	PacketHeader header;
-	readPacketHeader(buff, header);
+	unpackPacketHeader(buff, header);
 
 	// check packet type
 	packetType = header.packetType;
 	std::cout << "Receiving message with type: " << header.packetType << std::endl;
 
-	//TODO: check session ID
-	//if (0 < header.sessionID) {
-	// check database for the session ID
-	//}
-	
-
 	//TODO: check CRC
+	
+	
+	//TODO: check session ID
+	if (0 < header.sessionID) {
+
+	}
 
 
 	return true;
@@ -30,10 +30,10 @@ bool RequestHandler::verifyHeader(uint8_t *buff, std::string &packetType) {
 
 void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
-	readPacketHeader(buff, header);
+	unpackPacketHeader(buff, header);
 
 	SignInPacket packet;
-	readSignInPacket(buff, packet);
+	unpackSignInPacket(buff, packet);
 
 	std::string username(packet.username);
 	std::string password(packet.password);
@@ -66,10 +66,10 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 
 void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
-	readPacketHeader(buff, header);
+	unpackPacketHeader(buff, header);
 
 	SignUpPacket packet;
-	readSignUpPacket(buff, packet);
+	unpackSignUpPacket(buff, packet);
 
 	std::string username(packet.username);
 	std::string password(packet.password);

@@ -19,7 +19,7 @@ void printHex(uint8_t *buff, size_t size) {
 
 // unpack //
 
-void readPacketHeader(uint8_t *buff, PacketHeader &header) {
+void unpackPacketHeader(uint8_t *buff, PacketHeader &header) {
     // check packet type
     uint8_t *buffPtr = buff;
     memcpy(header.clientIP, buffPtr, sizeof(header.clientIP));
@@ -31,7 +31,7 @@ void readPacketHeader(uint8_t *buff, PacketHeader &header) {
     header.crc = ntohl(*buffPtr);
 }
 
-void readSignInPacket(uint8_t *buff, SignInPacket &packet) {
+void unpackSignInPacket(uint8_t *buff, SignInPacket &packet) {
     uint8_t *buffPtr = buff + sizeof(PacketHeader);
     memcpy(packet.username, buffPtr, sizeof(packet.username));
     buffPtr += sizeof(packet.username);
@@ -39,7 +39,7 @@ void readSignInPacket(uint8_t *buff, SignInPacket &packet) {
     buffPtr += sizeof(packet.password);
 }
 
-void readSignUpPacket(uint8_t *buff, SignUpPacket &packet) {
+void unpackSignUpPacket(uint8_t *buff, SignUpPacket &packet) {
     uint8_t *buffPtr = buff + sizeof(PacketHeader);
     memcpy(packet.username, buffPtr, sizeof(packet.username));
     buffPtr += sizeof(packet.username);

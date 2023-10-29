@@ -17,9 +17,12 @@ private:
 		std::map<std::string, std::vector<std::string>> executeAsMap();
 		DatabaseManager::IntermediateQuery *select(const std::vector<std::string> &columns_ = {});
 		DatabaseManager::IntermediateQuery *insert(const std::vector<std::string> &values_, const std::vector<std::string> &columns_ = {});
+		DatabaseManager::IntermediateQuery *where(std::string condition_);
 	private:
 		DatabaseManager *dbm;
 		std::vector<std::string> query;
+
+		std::map<std::string, std::vector<std::string>> executeAsMap(); //TODO: move back to public when complete
 	};
 
 public:
@@ -31,24 +34,6 @@ public:
 
 	void printTable(mysqlx::Table table);
 	std::shared_ptr<DatabaseManager::IntermediateQuery> query(std::string table_);
-
-
-	void test() {
-		mysqlx::Session sess("localhost", 33060, "user", "password");
-		mysqlx::Schema db = sess.getSchema("the_system");
-		// or Schema db(sess, "test");
-
-		mysqlx::Collection myColl = db.getCollection("my_collection");
-		// or Collection myColl(db, "my_collection");
-
-		mysqlx::DocResult myDocs = myColl.find("name like :param")
-			.limit(1)
-			.bind("param", "L%").execute();
-
-		//cout << myDocs.fetchOne();
-
-
-	}
 
 private:
 	std::string schema;
