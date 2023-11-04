@@ -16,9 +16,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     PageNavigator *pageNavigator = PageNavigator::getInstance();
-    connect(pageNavigator, &PageNavigator::pageChanged, this, [=](QSharedPointer<Page> page) {
+    connect(pageNavigator, &PageNavigator::changedPage, this, [=](QSharedPointer<Page> page) {
         const int stackIndex = ui->pages->addWidget(page.data());
         ui->pages->setCurrentIndex(stackIndex);
+    });
+
+    connect(pageNavigator, &PageNavigator::poppedPages, this, [=](int pagesPopped) {
+        for (int i = 0; i < pagesPopped; i++) {
+            auto currentPage = ui->pages->currentWidget();
+            ui->pages->removeWidget(currentPage);
+            ui->pages->setCurrentIndex(ui->pages->count() - 1);
+        }
     });
 
     QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes;

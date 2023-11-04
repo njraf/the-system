@@ -21,12 +21,27 @@ PageNavigator* PageNavigator::getInstance() {
     return PageNavigator::instance;
 }
 
-void PageNavigator::navigate(PageName page) const {
-    if (!routes.contains(page)) {
-        qDebug() << "This page does not have a route" << page;
+void PageNavigator::navigate(PageName page_) const {
+    if (!routes.contains(page_)) {
+        qDebug() << "This page does not have a route" << page_;
         return;
     }
-    currentPage = routes[page]();
+    currentPage = routes[page_]();
     backStack.push(currentPage);
-    emit pageChanged(currentPage);
+    emit changedPage(currentPage);
+}
+
+void PageNavigator::navigateBackTo(PageName page_) const {
+    int pagesPopped = 0;
+    while (backStack.size() > 1) {
+        auto top = backStack.top();
+        backStack.pop_back();
+        //NOTE: delete top here if we stop using QSharedPointer
+        pagesPopped++;
+        if (backStack.top()->getPageName() == page_) {
+            break;
+        }
+    }
+
+    emit poppedPages(pagesPopped);
 }

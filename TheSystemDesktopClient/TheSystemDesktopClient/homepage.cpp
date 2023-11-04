@@ -2,7 +2,7 @@
 #include "ui_homepage.h"
 
 HomePage::HomePage(QWidget *parent) :
-    Page(parent),
+    Page(PageName::HOME, parent),
     ui(new Ui::HomePage)
 {
     ui->setupUi(this);
