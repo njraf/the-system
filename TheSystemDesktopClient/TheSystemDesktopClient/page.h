@@ -4,6 +4,7 @@
 #include <QWidget>
 
 enum PageName {
+    BLANK,
     SIGN_IN,
     SIGN_UP,
     HOME

@@ -5,9 +5,6 @@
 #include "ui_mainwindow.h"
 #include "packetmanager.h"
 #include "pagenavigator.h"
-#include "signinpage.h"
-#include "signuppage.h"
-#include "homepage.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -29,12 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes;
-    routes.insert(PageName::SIGN_IN, []() { return QSharedPointer<SignInPage>::create(); });
-    routes.insert(PageName::SIGN_UP, []() { return QSharedPointer<SignUpPage>::create(); });
-    routes.insert(PageName::HOME, []() { return QSharedPointer<HomePage>::create(); });
-
-    pageNavigator->populateRoutes(routes);
     pageNavigator->navigate(PageName::SIGN_IN);
 
     PacketManager::getInstance()->start();

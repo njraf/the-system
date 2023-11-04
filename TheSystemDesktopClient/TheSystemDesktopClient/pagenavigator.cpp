@@ -11,10 +11,6 @@ PageNavigator::PageNavigator(QObject *parent)
 
 }
 
-void PageNavigator::populateRoutes(QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes_) {
-    routes = routes_;
-}
-
 PageNavigator* PageNavigator::getInstance() {
     if (nullptr == PageNavigator::instance) {
         PageNavigator::instance = new PageNavigator();
@@ -23,11 +19,6 @@ PageNavigator* PageNavigator::getInstance() {
 }
 
 void PageNavigator::navigate(PageName page_) const {
-    if (!routes.contains(page_)) {
-        qDebug() << "This page does not have a route" << page_;
-        return;
-    }
-    //currentPage = routes[page_]();
     currentPage = PageFactory::createPage(page_);
     backStack.push(currentPage);
     emit changedPage(currentPage);

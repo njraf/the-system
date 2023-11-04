@@ -2,6 +2,7 @@
 #include "signinpage.h"
 #include "signuppage.h"
 #include "homepage.h"
+#include "blankpage.h"
 
 PageFactory::PageFactory()
 {
@@ -9,19 +10,15 @@ PageFactory::PageFactory()
 }
 
 QSharedPointer<Page> PageFactory::createPage(PageName page_) {
-    QSharedPointer<Page> newPage;
     switch (page_) {
     case PageName::SIGN_IN:
-        newPage = QSharedPointer<SignInPage>::create();
-        break;
+        return QSharedPointer<SignInPage>::create();
     case PageName::SIGN_UP:
-        newPage = QSharedPointer<SignUpPage>::create();
-        break;
+        return QSharedPointer<SignUpPage>::create();
     case PageName::HOME:
-        newPage = QSharedPointer<HomePage>::create();
-        break;
+        return QSharedPointer<HomePage>::create();
     default:
-        break;
+        return QSharedPointer<BlankPage>::create();
     }
-    return newPage;
+    return QSharedPointer<BlankPage>::create();
 }
