@@ -90,26 +90,34 @@ void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {
 	UsersDAO usersDAO(databaseManager);
 	ResultPacket resultPacket{};
 	std::string msg = "";
+	bool success = false;
 
 	if (usersDAO.userExists(username)) {
 		// user already exists
-		resultPacket.success = 0;
+		success = false;
 		msg = "This username is already taken";
 	} else if (usersDAO.createUser(firstName, lastName, username, password)) {
 		// user does not exist and new user was created successfully
-		resultPacket.success = 1;
+		success = true;
 		msg = "User was created successfully";
 	} else { // failed to create user
-		resultPacket.success = 0;
+		success = false;
 		msg = "Failed to create a new account";
 	}
-	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
 
 	// generate new session ID
-	if (0 == header.sessionID) {
-		//TODO: generate a new session ID
+	if (success && (0 == header.sessionID)) {
+		SessionsDAO sessionsDao(databaseManager);
+		uint32_t newSessionID = sessionsDao.createSession(username);
+		success = (0 != newSessionID);
+		if (success) {
+			header.sessionID = newSessionID;
+		}
+		msg = success ? "Please wait while we sign you in" : "Could not create a session";
 	}
 	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
+	resultPacket.success = static_cast<uint32_t>(success);
+	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
 
 	// create success/fail result packet
 	uint8_t responseBuff[MTU];
