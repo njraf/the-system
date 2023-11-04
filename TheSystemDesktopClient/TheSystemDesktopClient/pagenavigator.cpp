@@ -1,4 +1,5 @@
 #include "pagenavigator.h"
+#include "pagefactory.h"
 
 #include <QDebug>
 
@@ -26,7 +27,8 @@ void PageNavigator::navigate(PageName page_) const {
         qDebug() << "This page does not have a route" << page_;
         return;
     }
-    currentPage = routes[page_]();
+    //currentPage = routes[page_]();
+    currentPage = PageFactory::createPage(page_);
     backStack.push(currentPage);
     emit changedPage(currentPage);
 }

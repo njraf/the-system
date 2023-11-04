@@ -14,6 +14,7 @@ SOURCES += \
     mainwindow.cpp \
     packetmanager.cpp \
     page.cpp \
+    pagefactory.cpp \
     pagenavigator.cpp \
     signinpage.cpp \
     signuppage.cpp
@@ -23,6 +24,7 @@ HEADERS += \
     mainwindow.h \
     packetmanager.h \
     page.h \
+    pagefactory.h \
     pagenavigator.h \
     signinpage.h \
     signuppage.h
