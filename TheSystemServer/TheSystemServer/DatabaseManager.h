@@ -22,6 +22,7 @@ private:
 		DatabaseManager::IntermediateQuery *select(const std::vector<std::string> &columns_ = {});
 		DatabaseManager::IntermediateQuery *insert(const std::vector<std::string> &values_, const std::vector<std::string> &columns_ = {});
 		DatabaseManager::IntermediateQuery *where(std::string condition_);
+		DatabaseManager::IntermediateQuery *remove();
 	private:
 		DatabaseManager *dbm;
 		std::vector<std::string> query;

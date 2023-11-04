@@ -138,3 +138,8 @@ DatabaseManager::IntermediateQuery *DatabaseManager::IntermediateQuery::where(st
     query.push_back(condition_);
     return this;
 }
+
+DatabaseManager::IntermediateQuery *DatabaseManager::IntermediateQuery::remove() {
+    query.insert(query.begin(), "DELETE FROM");
+    return this;
+}

@@ -60,11 +60,13 @@ void packHeader(uint8_t *buff, const PacketHeader &header) {
     buffPtr += 16;
     memcpy(buffPtr, header.packetType, sizeof(header.packetType));
     buffPtr += sizeof(header.packetType);
-    *buffPtr = htonl(header.sessionID);
-    buffPtr += sizeof(header.sessionID);
+    uint32_t val32 = htonl(header.sessionID);
+    memcpy(buffPtr, &val32, sizeof(val32));
+    buffPtr += sizeof(val32);
 
     //TODO: do crc
-    *buffPtr = htonl(header.crc);
+    val32 = htonl(header.crc);
+    memcpy(buffPtr, &val32, sizeof(val32));
 }
 
 void packResultPacket(uint8_t *buff, const ResultPacket &packet) {

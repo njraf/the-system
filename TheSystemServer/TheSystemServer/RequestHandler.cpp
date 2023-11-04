@@ -46,21 +46,23 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 
 	// check if username exists in the database
 	UsersDAO usersDAO(databaseManager);
-	resultPacket.success = static_cast<uint32_t>(usersDAO.isValidSignInAttempt(username, password));
+	bool success = usersDAO.isValidSignInAttempt(username, password);
+	std::string msg = success ? "Please wait while we sign you in" : "Username or password were not recognized";
 
 	// generate new session ID
-	if (0 == header.sessionID) {
+	if (success && (0 == header.sessionID)) {
 		SessionsDAO sessionsDao(databaseManager);
-		int newSessionID = sessionsDao.createSession(username);
-		if (-1 == newSessionID) {
-			return;
+		uint32_t newSessionID = sessionsDao.createSession(username);
+		success = (0 != newSessionID);
+		if (success) {
+			header.sessionID = newSessionID;
 		}
-		header.sessionID = newSessionID;
+		msg = success ? "Please wait while we sign you in" : "Could not create a session";
 	}
+	resultPacket.success = static_cast<uint32_t>(success);
 	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
 
 	// set result message
-	std::string msg = resultPacket.success ? "Please wait while we sign you in" : "Username or password were not recognized";
 	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
 
 	// create success/fail result packet

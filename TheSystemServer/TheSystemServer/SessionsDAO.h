@@ -9,7 +9,7 @@ public:
 	~SessionsDAO() = default;
 
 	bool sessionExists(uint32_t sessionID) const;
-	int createSession(std::string username_) const;
+	uint32_t createSession(std::string username_) const;
 
 private:
 	std::shared_ptr<DatabaseManager> databaseManager;

@@ -184,7 +184,7 @@ void PacketManager::packHeader(uint8_t *buff, std::string type) const {
 
 bool PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
     uint8_t *buffPtr = buff;
-    memcpy(header.ipAdderss, buffPtr, 16);
+    memcpy(header.ipAddress, buffPtr, 16);
     buffPtr += 16;
     memcpy(header.packetType, buffPtr, 4);
     buffPtr += 4;
@@ -208,7 +208,7 @@ bool PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
     }
 
     // check that the header IP address matches the one we sent
-    if (QString(header.ipAdderss) != desktopClientHost.toString()) {
+    if (QString(header.ipAddress) != desktopClientHost.toString()) {
         qDebug() << "ERROR: The returned IP address of the received packet is different than our own";
         return false;
     }
