@@ -25,6 +25,20 @@ void PageNavigator::navigate(PageName page_) const {
 }
 
 void PageNavigator::navigateBackTo(PageName page_) const {
+    // check if the requested page is in the backstack
+    bool pageFound = false;
+    for (auto page : backStack) {
+        if (page->getPageName() == page_) {
+            pageFound = true;
+            break;
+        }
+    }
+
+    if (!pageFound) {
+        return;
+    }
+
+    // pop back to the requested page
     int pagesPopped = 0;
     while (backStack.size() > 1) {
         auto top = backStack.top();
