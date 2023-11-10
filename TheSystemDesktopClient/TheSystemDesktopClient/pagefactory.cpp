@@ -9,16 +9,16 @@ PageFactory::PageFactory()
 
 }
 
-QSharedPointer<Page> PageFactory::createPage(PageName page_) {
+Page* PageFactory::createPage(PageName page_) {
     switch (page_) {
     case PageName::SIGN_IN:
-        return QSharedPointer<SignInPage>::create();
+        return new SignInPage();
     case PageName::SIGN_UP:
-        return QSharedPointer<SignUpPage>::create();
+        return new SignUpPage();
     case PageName::HOME:
-        return QSharedPointer<HomePage>::create();
+        return new HomePage();
     default:
-        return QSharedPointer<BlankPage>::create();
+        return new BlankPage();
     }
-    return QSharedPointer<BlankPage>::create();
+    return new BlankPage();
 }

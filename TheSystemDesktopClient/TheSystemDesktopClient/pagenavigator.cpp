@@ -1,6 +1,8 @@
 #include "pagenavigator.h"
 #include "pagefactory.h"
 
+#include <algorithm>
+
 #include <QDebug>
 
 PageNavigator* PageNavigator::instance = nullptr;
@@ -26,24 +28,18 @@ void PageNavigator::navigate(PageName page_) const {
 
 void PageNavigator::navigateBackTo(PageName page_) const {
     // check if the requested page is in the backstack
-    bool pageFound = false;
-    for (auto page : backStack) {
-        if (page->getPageName() == page_) {
-            pageFound = true;
-            break;
-        }
-    }
-
-    if (!pageFound) {
+    const bool PAGE_FOUND = std::any_of(backStack.begin(), backStack.end(), [page_](Page* backStackPage_) { return (backStackPage_->getPageName() == page_); });
+    if (!PAGE_FOUND) {
         return;
     }
 
     // pop back to the requested page
     int pagesPopped = 0;
+    QList<Page*> pagesToDelete;
     while (backStack.size() > 1) {
         auto top = backStack.top();
+        pagesToDelete.push_back(top);
         backStack.pop_back();
-        //NOTE: delete top here if we stop using QSharedPointer
         pagesPopped++;
         if (backStack.top()->getPageName() == page_) {
             break;

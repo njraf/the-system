@@ -2,7 +2,6 @@
 #define PAGENAVIGATOR_H
 
 #include <QObject>
-#include <QSharedPointer>
 #include <QStack>
 #include <QMap>
 
@@ -20,11 +19,11 @@ public:
 
 private:
     static PageNavigator *instance;
-    mutable QStack<QSharedPointer<Page>> backStack;
-    mutable QSharedPointer<Page> currentPage;
+    mutable QStack<Page*> backStack;
+    mutable Page* currentPage;
 
 signals:
-    void changedPage(QSharedPointer<Page> page) const;
+    void changedPage(Page* page) const;
     void poppedPages(int pagesPopped) const;
 
 };
