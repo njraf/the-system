@@ -10,6 +10,8 @@
 
 #include "sockets.h"
 
+#define BSD // uncomment to use Qt sockets (if I get it working)
+
 typedef struct {
     char ipAddress[16];
     char packetType[4];
@@ -48,8 +50,11 @@ private:
     const int REQUEST_TX_PORT = 3579;  // SEND to load balancer
     const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
     struct sockaddr_in requestAddr;
-    //QUdpSocket *sock;
+#ifdef BSD
     socket_t sock;
+#else
+    QUdpSocket *sock;
+#endif
     volatile bool isRunning = true;
     uint32_t sessionID;
 

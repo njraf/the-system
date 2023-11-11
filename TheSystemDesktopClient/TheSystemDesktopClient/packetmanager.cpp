@@ -31,11 +31,7 @@ PacketManager::PacketManager(QObject *parent)
     }
     file.close();
 
-    // Qt socket //
-    //QObject::connect(sock, &QUdpSocket::readyRead, this, &PacketManager::readTestPacket);
-    //sock->bind(QHostAddress::AnyIPv4, RESPONSE_RX_PORT);
-
-
+#ifdef BSD
     // Berkley socket //
     sock = createSocket(AF_INET, SOCK_DGRAM, 0);
     if (INVALID_SOCKET == sock) {
@@ -50,13 +46,21 @@ PacketManager::PacketManager(QObject *parent)
     }
 
     makeSockaddr(requestAddr, AF_INET, loadBalancerHost.toString().toStdString().c_str(), REQUEST_TX_PORT);
+#else
+    // Qt socket //
+    QObject::connect(sock, &QUdpSocket::readyRead, this, &PacketManager::readTestPacket);
+    sock->bind(QHostAddress::AnyIPv4, RESPONSE_RX_PORT);
+#endif
 }
 
 PacketManager::~PacketManager() {
     isRunning = false;
+#ifdef BSD
     closeSocket(sock);
-    //sock->close();
-    //delete sock;
+#else
+    sock->close();
+    delete sock;
+#endif
 }
 
 PacketManager* PacketManager::getInstance() {
@@ -67,6 +71,7 @@ PacketManager* PacketManager::getInstance() {
 }
 
 void PacketManager::run() {
+#ifdef BSD
     fd_set mainSet;
     FD_ZERO(&mainSet);
     FD_SET(sock, &mainSet);
@@ -138,6 +143,7 @@ void PacketManager::run() {
             emit receivedResult(success, QString(message));
         }
     }
+#endif //TODO: do #else for Qt
     qDebug() << "Ending thread";
 }
 
