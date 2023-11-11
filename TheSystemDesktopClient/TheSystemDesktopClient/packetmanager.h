@@ -10,10 +10,6 @@
 
 #include "sockets.h"
 
-//#ifndef _WIN32
-//#include <netinet/in.h>
-//#endif
-
 typedef struct {
     char ipAddress[16];
     char packetType[4];

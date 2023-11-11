@@ -5,16 +5,6 @@
 #include <QFile>
 #include <QStringList>
 
-//#ifndef _WIN32
-//#include <sys/socket.h>
-//#include <sys/types.h>
-//#include <sys/select.h>
-//#include <arpa/inet.h>
-//#include <unistd.h>
-//#include <netdb.h>
-//#include <netinet/in.h>
-//#endif
-
 PacketManager* PacketManager::instance = nullptr;
 
 PacketManager::PacketManager(QObject *parent)
