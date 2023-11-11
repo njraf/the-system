@@ -214,7 +214,7 @@ void PacketManager::sendSignInPacket(QString username, QString password) const {
     packHeader(packet, "SNIN");
 
     // send
-    int bytesWrote = sendto(sock, (char*)packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    int bytesWrote = sendto(sock, (char*)packet, packetPtr - packet, 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";
@@ -240,7 +240,7 @@ void PacketManager::sendSignUpPacket(QString username, QString password, QString
     packHeader(packet, "SNUP");
 
     // send
-    int bytesWrote = sendto(sock, (char*)packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    int bytesWrote = sendto(sock, (char*)packet, packetPtr - packet, 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";
