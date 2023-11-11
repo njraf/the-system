@@ -14,6 +14,13 @@
 //#include <netinet/in.h>
 //#endif
 
+typedef struct {
+    char ipAddress[16];
+    char packetType[4];
+    uint32_t sessionID;
+    uint32_t crc;
+} PacketHeader;
+
 class PacketManager : public QThread
 {
     Q_OBJECT
@@ -48,9 +55,10 @@ private:
     //QUdpSocket *sock;
     socket_t sock;
     volatile bool isRunning = true;
-    int sessionID;
+    uint32_t sessionID;
 
     void packHeader(uint8_t *buff, std::string type) const; // NOTE: call at the end of each pack function for accurate CRC value
+    bool unpackHeader(uint8_t *buff, PacketHeader &header);
 
 
 signals:

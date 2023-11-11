@@ -6,6 +6,10 @@
 
 #include <mysqlx/xdevapi.h>
 
+enum class Keyword : uint32_t {
+	NOW = 0
+};
+
 class DatabaseManager {
 
 private:
@@ -14,12 +18,16 @@ private:
 		IntermediateQuery(DatabaseManager *dbm_, std::string table_);
 		~IntermediateQuery() = default;
 		std::vector<std::vector<mysqlx::Value>> execute();
-		std::map<std::string, std::vector<std::string>> executeAsMap();
+
 		DatabaseManager::IntermediateQuery *select(const std::vector<std::string> &columns_ = {});
 		DatabaseManager::IntermediateQuery *insert(const std::vector<std::string> &values_, const std::vector<std::string> &columns_ = {});
+		DatabaseManager::IntermediateQuery *where(std::string condition_);
+		DatabaseManager::IntermediateQuery *remove();
 	private:
 		DatabaseManager *dbm;
 		std::vector<std::string> query;
+
+		std::map<std::string, std::vector<std::string>> executeAsMap(); //TODO: move back to public when complete
 	};
 
 public:
@@ -27,28 +35,13 @@ public:
 	DatabaseManager(std::shared_ptr<mysqlx::Session> session_, std::string initialSchema);
 	~DatabaseManager();
 
+	std::shared_ptr<mysqlx::Session> getSession();
 	mysqlx::Schema getSchema();
 
 	void printTable(mysqlx::Table table);
 	std::shared_ptr<DatabaseManager::IntermediateQuery> query(std::string table_);
 
-
-	void test() {
-		mysqlx::Session sess("localhost", 33060, "user", "password");
-		mysqlx::Schema db = sess.getSchema("the_system");
-		// or Schema db(sess, "test");
-
-		mysqlx::Collection myColl = db.getCollection("my_collection");
-		// or Collection myColl(db, "my_collection");
-
-		mysqlx::DocResult myDocs = myColl.find("name like :param")
-			.limit(1)
-			.bind("param", "L%").execute();
-
-		//cout << myDocs.fetchOne();
-
-
-	}
+	static std::map<Keyword, std::string> keywordToString;
 
 private:
 	std::string schema;

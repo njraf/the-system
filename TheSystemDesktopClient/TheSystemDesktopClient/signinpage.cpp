@@ -4,7 +4,7 @@
 #include "pagenavigator.h"
 
 SignInPage::SignInPage(QWidget *parent) :
-    Page(parent),
+    Page(PageName::SIGN_IN, parent),
     ui(new Ui::SignInPage)
 {
     ui->setupUi(this);
@@ -19,7 +19,7 @@ SignInPage::SignInPage(QWidget *parent) :
     // change to sign up page
     connect(ui->signupButton, &QPushButton::clicked, this, [=]() { navigator->navigate(PageName::SIGN_UP); });
 
-    // result packet received. change page or display failed login message                                         //TODO: change to home page when created
+    // result packet received. change page or display failed login message
     connect(packetManager, &PacketManager::receivedResult, this, [=](bool success, QString message) { success ? navigator->navigate(PageName::HOME) : ui->statusLabel->setText(message); });
 }
 

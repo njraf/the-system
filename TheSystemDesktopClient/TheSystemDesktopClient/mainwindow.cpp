@@ -5,9 +5,6 @@
 #include "ui_mainwindow.h"
 #include "packetmanager.h"
 #include "pagenavigator.h"
-#include "signinpage.h"
-#include "signuppage.h"
-#include "homepage.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,17 +13,19 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     PageNavigator *pageNavigator = PageNavigator::getInstance();
-    connect(pageNavigator, &PageNavigator::pageChanged, this, [=](QSharedPointer<Page> page) {
-        const int stackIndex = ui->pages->addWidget(page.data());
+    connect(pageNavigator, &PageNavigator::changedPage, this, [=](Page* page) {
+        const int stackIndex = ui->pages->addWidget(page); // page's parent becomes the QStackedWidget
         ui->pages->setCurrentIndex(stackIndex);
     });
 
-    QMap<PageName, std::function<QSharedPointer<Page>(void)>> routes;
-    routes.insert(PageName::SIGN_IN, []() { return QSharedPointer<SignInPage>::create(); });
-    routes.insert(PageName::SIGN_UP, []() { return QSharedPointer<SignUpPage>::create(); });
-    routes.insert(PageName::HOME, []() { return QSharedPointer<HomePage>::create(); });
+    connect(pageNavigator, &PageNavigator::poppedPages, this, [=](int pagesPopped) {
+        for (int i = 0; i < pagesPopped; i++) {
+            auto currentPage = ui->pages->currentWidget();
+            ui->pages->removeWidget(currentPage); // currentPage's parent remains the QStackedWidget and will be deleted automatically
+        }
+        ui->pages->setCurrentIndex(ui->pages->count() - 1);
+    });
 
-    pageNavigator->populateRoutes(routes);
     pageNavigator->navigate(PageName::SIGN_IN);
 
     PacketManager::getInstance()->start();

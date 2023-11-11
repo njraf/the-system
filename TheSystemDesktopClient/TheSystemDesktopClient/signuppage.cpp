@@ -4,7 +4,7 @@
 #include "pagenavigator.h"
 
 SignUpPage::SignUpPage(QWidget *parent) :
-    Page(parent),
+    Page(PageName::SIGN_UP, parent),
     ui(new Ui::SignUpPage)
 {
     ui->setupUi(this);

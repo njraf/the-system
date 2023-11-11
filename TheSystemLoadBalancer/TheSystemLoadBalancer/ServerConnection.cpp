@@ -26,6 +26,10 @@ int ServerConnection::getActiveRequests() const {
 	return activeRequests;
 }
 
+void ServerConnection::invalidateSocket() {
+	sock = INVALID_SOCKET;
+}
+
 bool ServerConnection::sendPacket(uint8_t *buff, int len) {
 	int bytesWrote = send(sock, (char*)buff, len, 0);
 	if (-1 == bytesWrote) {
@@ -45,6 +49,7 @@ int ServerConnection::recvPacket(uint8_t *buff, int len) const {
 		std::cout << "Failed to read from a server" << std::endl;
 	} else if (0 == bytesRead) {
 		std::cout << "Server disconnected" << std::endl;
+		bytesRead = SOCKET_ERROR;
 	} else {
 		std::cout << "Server message: " << buff << std::endl;
 	}

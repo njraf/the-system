@@ -125,13 +125,6 @@ int main() {
     memset(dbPassword, 0, FILE_BUFFER_SIZE);
     
     std::shared_ptr<DatabaseManager> databaseManager = std::make_shared<DatabaseManager>(session, "the_system");
-    for (std::string asd : databaseManager->getSchema().getTableNames()) {
-        // print table names
-        //std::cout << asd << std::endl;
-    }
-    mysqlx::Table users = databaseManager->getSchema().getTable("users");
-    databaseManager->printTable(users);
-    
 
     // connect to load balancer over TCP
     socket_t sock = createSocket(AF_INET, SOCK_STREAM, 0);

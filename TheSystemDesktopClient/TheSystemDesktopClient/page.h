@@ -4,6 +4,7 @@
 #include <QWidget>
 
 enum PageName {
+    BLANK,
     SIGN_IN,
     SIGN_UP,
     HOME
@@ -13,10 +14,12 @@ class Page : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Page(QWidget *parent = nullptr);
+    explicit Page(PageName name_, QWidget *parent = nullptr);
 
-signals:
+    PageName getPageName() const;
 
+private:
+    PageName name;
 };
 
 #endif // PAGE_H

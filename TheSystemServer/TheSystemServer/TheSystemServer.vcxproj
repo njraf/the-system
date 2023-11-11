@@ -154,6 +154,7 @@
     <ClCompile Include="DatabaseManager.cpp" />
     <ClCompile Include="PacketFormat.cpp" />
     <ClCompile Include="RequestHandler.cpp" />
+    <ClCompile Include="SessionsDAO.cpp" />
     <ClCompile Include="UsersDAO.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="TheSystemServer.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="DatabaseManager.h" />
     <ClInclude Include="PacketFormats.h" />
     <ClInclude Include="RequestHandler.h" />
+    <ClInclude Include="SessionsDAO.h" />
     <ClInclude Include="UsersDAO.h" />
     <ClInclude Include="sockets.h" />
   </ItemGroup>

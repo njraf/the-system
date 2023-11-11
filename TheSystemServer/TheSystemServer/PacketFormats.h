@@ -34,9 +34,9 @@ typedef struct {
 
 // unpack //
 
-void readPacketHeader(uint8_t *buff, PacketHeader &header);
-void readSignInPacket(uint8_t *buff, SignInPacket &packet);
-void readSignUpPacket(uint8_t *buff, SignUpPacket &packet);
+void unpackPacketHeader(uint8_t *buff, PacketHeader &header);
+void unpackSignInPacket(uint8_t *buff, SignInPacket &packet);
+void unpackSignUpPacket(uint8_t *buff, SignUpPacket &packet);
 
 
 // pack //
