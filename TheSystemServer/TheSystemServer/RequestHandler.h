@@ -11,7 +11,7 @@ public:
 	RequestHandler(std::shared_ptr<DatabaseManager> databaseManager_);
 	~RequestHandler() = default;
 
-	bool verifyHeader(uint8_t *buff, std::string &packetType);
+	bool verifyHeader(uint8_t *buff, size_t packetSize_, std::string &packetType);
 	void resolveSignIn(uint8_t *buff, socket_t sock);
 	void resolveSignUp(uint8_t *buff, socket_t sock);
 

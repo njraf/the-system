@@ -7,10 +7,10 @@ constexpr size_t HEADER_SIZE = 28;
 constexpr size_t MAX_STR_LEN = 64;
 
 typedef struct {
+	uint32_t crc;
 	char clientIP[16];
 	char packetType[4];
 	uint32_t sessionID;
-	uint32_t crc;
 } PacketHeader;
 
 typedef struct {
@@ -34,7 +34,7 @@ typedef struct {
 
 // unpack //
 
-void unpackPacketHeader(uint8_t *buff, PacketHeader &header);
+void unpackHeader(uint8_t *buff, size_t packetSize_, PacketHeader &header);
 void unpackSignInPacket(uint8_t *buff, SignInPacket &packet);
 void unpackSignUpPacket(uint8_t *buff, SignUpPacket &packet);
 

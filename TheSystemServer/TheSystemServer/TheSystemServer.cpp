@@ -204,8 +204,23 @@ int main() {
 
         // parse packets
         std::string packetType = "";
-        if (!requestHandler.verifyHeader(buff, packetType)) {
+        if (!requestHandler.verifyHeader(buff, bytesRead, packetType)) { //TODO: can bytesRead be more than one packet?
             std::cout << "Invalid packet header" << std::endl;
+
+            PacketHeader header;
+            unpackHeader(buff, 0, header);
+            strncpy_s(header.packetType, 4, "RSLT", 4);
+
+            ResultPacket resultPacket;
+            std::string msg = "ERROR: Bad packet";
+            strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
+            resultPacket.success = false;
+
+            uint8_t responseBuff[MTU];
+            memset(responseBuff, 0, sizeof(responseBuff));
+            packResultPacket(responseBuff, resultPacket);
+            packHeader(responseBuff, header);
+            send(sock, (char *)responseBuff, sizeof(PacketHeader) + sizeof(ResultPacket), 0);
             continue;
         }
 
