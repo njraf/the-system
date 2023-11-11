@@ -5,15 +5,15 @@
 #include <QFile>
 #include <QStringList>
 
-#ifndef _WIN32
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/select.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#endif
+//#ifndef _WIN32
+//#include <sys/socket.h>
+//#include <sys/types.h>
+//#include <sys/select.h>
+//#include <arpa/inet.h>
+//#include <unistd.h>
+//#include <netdb.h>
+//#include <netinet/in.h>
+//#endif
 
 PacketManager* PacketManager::instance = nullptr;
 
@@ -25,7 +25,7 @@ PacketManager::PacketManager(QObject *parent)
     // get IP addresses of the load balancer and this client
     QFile file("../../addresses.csv");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to set IP addresses";
+        qDebug() << "Failed to set IP addresses" << file.errorString();
         return;
     }
 
@@ -47,36 +47,24 @@ PacketManager::PacketManager(QObject *parent)
 
 
     // Berkley socket //
-#ifndef _WIN32
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (-1 == sock) {
+    sock = createSocket(AF_INET, SOCK_DGRAM, 0);
+    if (INVALID_SOCKET == sock) {
         qDebug() << "Bad sock fd";
         return;
     }
     struct sockaddr_in responseAddr;
-    responseAddr.sin_family = AF_INET;
-    responseAddr.sin_port = RESPONSE_RX_PORT;
-    if (1 != inet_pton(AF_INET, desktopClientHost.toString().toStdString().c_str(), &(responseAddr.sin_addr))) {
-        qDebug() << "Response inet_pton error";
-        return;
-    }
+    makeSockaddr(responseAddr, AF_INET, desktopClientHost.toString().toStdString().c_str(), RESPONSE_RX_PORT);
     if (-1 == bind(sock, (struct sockaddr*)&responseAddr, sizeof(responseAddr))) {
         qDebug() << "Bind error";
         return;
     }
 
-    requestAddr.sin_family = AF_INET;
-    requestAddr.sin_port = REQUEST_TX_PORT;
-    if (-1 == inet_pton(AF_INET, loadBalancerHost.toString().toStdString().c_str(), &(requestAddr.sin_addr))) {
-        qDebug() << "Request inet_pton error";
-        return;
-    }
-#endif
+    makeSockaddr(requestAddr, AF_INET, loadBalancerHost.toString().toStdString().c_str(), REQUEST_TX_PORT);
 }
 
 PacketManager::~PacketManager() {
     isRunning = false;
-    close(sock);
+    closeSocket(sock);
     //sock->close();
     //delete sock;
 }
@@ -133,7 +121,7 @@ void PacketManager::run() {
 
         uint8_t buff[MTU];
         memset(buff, 0, MTU);
-        int bytesRead = recv(sock, buff, MTU, 0);
+        int bytesRead = recv(sock, (char*)buff, MTU, 0);
         if (-1 == bytesRead) {
             qDebug() << "Read error";
             errno = 0;
@@ -184,7 +172,7 @@ void PacketManager::sendTestPacket() {
 
 
     // use Berkley sockets (works on linux) //
-    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    int bytesWrote = sendto(sock, (char*)packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";
@@ -230,7 +218,7 @@ void PacketManager::sendSignInPacket(QString username, QString password) const {
     packHeader(packet, "SNIN");
 
     // send
-    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    int bytesWrote = sendto(sock, (char*)packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";
@@ -256,7 +244,7 @@ void PacketManager::sendSignUpPacket(QString username, QString password, QString
     packHeader(packet, "SNUP");
 
     // send
-    int bytesWrote = sendto(sock, packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
+    int bytesWrote = sendto(sock, (char*)packet, sizeof(packet), 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
     if (-1 == bytesWrote) {
         qDebug() << "Send error";

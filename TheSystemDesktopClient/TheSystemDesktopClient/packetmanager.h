@@ -8,9 +8,11 @@
 #include <QUdpSocket>
 #include <QNetworkDatagram>
 
-#ifndef _WIN32
-#include <netinet/in.h>
-#endif
+#include "sockets.h"
+
+//#ifndef _WIN32
+//#include <netinet/in.h>
+//#endif
 
 class PacketManager : public QThread
 {
@@ -44,7 +46,7 @@ private:
     const int RESPONSE_RX_PORT = 3576; // RECV from load balancer
     struct sockaddr_in requestAddr;
     //QUdpSocket *sock;
-    int sock;
+    socket_t sock;
     volatile bool isRunning = true;
     int sessionID;
 

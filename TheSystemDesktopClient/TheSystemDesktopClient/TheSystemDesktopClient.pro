@@ -16,7 +16,8 @@ SOURCES += \
     page.cpp \
     pagenavigator.cpp \
     signinpage.cpp \
-    signuppage.cpp
+    signuppage.cpp \
+    sockets.cpp
 
 HEADERS += \
     homepage.h \
@@ -25,13 +26,16 @@ HEADERS += \
     page.h \
     pagenavigator.h \
     signinpage.h \
-    signuppage.h
+    signuppage.h \
+    sockets.h
 
 FORMS += \
     homepage.ui \
     mainwindow.ui \
     signinpage.ui \
     signuppage.ui
+
+win32: LIBS += -lws2_32
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
