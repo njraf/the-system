@@ -17,6 +17,7 @@ SOURCES += \
     pagenavigator.cpp \
     signinpage.cpp \
     signuppage.cpp \
+    sockets.cpp \
     sockets.cpp
 
 HEADERS += \
@@ -27,6 +28,7 @@ HEADERS += \
     pagenavigator.h \
     signinpage.h \
     signuppage.h \
+    sockets.h \
     sockets.h
 
 FORMS += \
