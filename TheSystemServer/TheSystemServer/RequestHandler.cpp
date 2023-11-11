@@ -40,7 +40,8 @@ bool RequestHandler::verifyHeader(uint8_t *buff, size_t packetSize_, std::string
 
 void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
-	unpackHeader(buff, sizeof(PacketHeader) + sizeof(SignInPacket), header);
+	const size_t PACKET_SIZE = sizeof(PacketHeader) + sizeof(SignInPacket);
+	unpackHeader(buff, PACKET_SIZE, header);
 
 	SignInPacket packet;
 	unpackSignInPacket(buff, packet);
@@ -75,7 +76,7 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	uint8_t responseBuff[MTU];
 	memset(responseBuff, 0, sizeof(responseBuff));
 	packResultPacket(responseBuff, resultPacket);
-	packHeader(responseBuff, header);
+	packHeader(responseBuff, PACKET_SIZE, header);
 
 	// send response
 	send(sock, (char *)responseBuff, sizeof(PacketHeader) + sizeof(ResultPacket), 0);
@@ -83,7 +84,8 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 
 void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
-	unpackHeader(buff, sizeof(PacketHeader) + sizeof(SignUpPacket), header);
+	const size_t PACKET_SIZE = sizeof(PacketHeader) + sizeof(SignUpPacket);
+	unpackHeader(buff, PACKET_SIZE, header);
 	
 	SignUpPacket packet;
 	unpackSignUpPacket(buff, packet);
@@ -129,7 +131,7 @@ void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {
 	uint8_t responseBuff[MTU];
 	memset(responseBuff, 0, sizeof(responseBuff));
 	packResultPacket(responseBuff, resultPacket);
-	packHeader(responseBuff, header);
+	packHeader(responseBuff, PACKET_SIZE, header);
 
 	// send response
 	send(sock, (char *)responseBuff, sizeof(PacketHeader) + sizeof(ResultPacket), 0);

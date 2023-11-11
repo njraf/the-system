@@ -8,6 +8,6 @@ CXXFLAGS = -std=c++17
 
 
 all:
-	$(CC) $(CXXFLAGS) $(CPPFLAGS) -o server TheSystemServer.cpp sockets.cpp DatabaseManager.cpp RequestHandler.cpp UsersDAO.cpp PacketFormat.cpp $(LDLIBS)
+	$(CC) $(CXXFLAGS) $(CPPFLAGS) -o server TheSystemServer.cpp sockets.cpp DatabaseManager.cpp RequestHandler.cpp UsersDAO.cpp SessionsDAO.cpp PacketFormat.cpp $(LDLIBS)
 clean:
 	@rm server

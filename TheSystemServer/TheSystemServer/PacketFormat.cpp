@@ -33,7 +33,7 @@ void unpackHeader(uint8_t *buff, size_t packetSize_, PacketHeader &header) {
     header.sessionID = ntohl(*buffPtr);
     buffPtr += 4;
 
-    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), packetSize_ - sizeof(uint32_t));
+    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
     header.crc = ntohl(CRC);
 }
 
@@ -71,7 +71,7 @@ void packHeader(uint8_t *buff, size_t packetSize_, const PacketHeader &header) {
     memcpy(buffPtr, &val32, sizeof(val32));
     buffPtr += sizeof(val32);
 
-    const uint32_t CRC = crc32(0, (Bytef *)(buff + sizeof(uint32_t)), packetSize_ - sizeof(uint32_t));
+    const uint32_t CRC = crc32(0, (Bytef *)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
     val32 = htonl(CRC);
     memcpy(buff, &val32, sizeof(val32));
 }

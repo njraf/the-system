@@ -42,7 +42,7 @@ void unpackSignUpPacket(uint8_t *buff, SignUpPacket &packet);
 // pack //
 
 // call this after other pack functions so crc can create a checksum properly
-void packHeader(uint8_t *buff, const PacketHeader &header);
+void packHeader(uint8_t *buff, size_t packetSize_, const PacketHeader &header);
 void packResultPacket(uint8_t *buff, const ResultPacket &packet);
 
 

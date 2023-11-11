@@ -1,3 +1,5 @@
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -40,10 +42,18 @@ uint32_t SessionsDAO::createSession(std::string username_) const {
 
 		// get current time
 		time_t now = time(0);
-		struct tm tstruct;
+		struct tm *tstruct;
+#ifdef _WIN32
+		localtime_s(tstruct, &now);
+#else
+#ifdef __STDC_LIB_EXT1__
+		localtime_s(&now, tstruct);
+#else
+		tstruct = localtime(&now);
+#endif
+#endif
 		char timeBuff[80];
-		localtime_s(&tstruct , &now);
-		strftime(timeBuff, sizeof(timeBuff), "%Y-%m-%d %X", &tstruct);
+		strftime(timeBuff, sizeof(timeBuff), "%Y-%m-%d %X", tstruct);
 
 		// create the new session
 		databaseManager->query("sessions")->insert({std::to_string(userID), std::string(timeBuff)}, {"user_id", "creation_datetime"})->execute();

@@ -207,6 +207,7 @@ int main() {
         if (!requestHandler.verifyHeader(buff, bytesRead, packetType)) { //TODO: can bytesRead be more than one packet?
             std::cout << "Invalid packet header" << std::endl;
 
+            const size_t PACKET_SIZE = sizeof(PacketHeader) + sizeof(ResultPacket);
             PacketHeader header;
             unpackHeader(buff, 0, header);
             strncpy_s(header.packetType, 4, "RSLT", 4);
@@ -219,8 +220,8 @@ int main() {
             uint8_t responseBuff[MTU];
             memset(responseBuff, 0, sizeof(responseBuff));
             packResultPacket(responseBuff, resultPacket);
-            packHeader(responseBuff, header);
-            send(sock, (char *)responseBuff, sizeof(PacketHeader) + sizeof(ResultPacket), 0);
+            packHeader(responseBuff, PACKET_SIZE, header);
+            send(sock, (char *)responseBuff, PACKET_SIZE, 0);
             continue;
         }
 
