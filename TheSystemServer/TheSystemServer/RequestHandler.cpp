@@ -12,6 +12,7 @@ RequestHandler::RequestHandler(std::shared_ptr<DatabaseManager> databaseManager_
 }
 
 bool RequestHandler::verifyHeader(uint8_t *buff, size_t packetSize_, std::string &packetType) {
+	std::cout << "verify with packet size " << packetSize_ << std::endl;
 	PacketHeader header;
 	unpackHeader(buff, packetSize_, header);
 
@@ -20,7 +21,7 @@ bool RequestHandler::verifyHeader(uint8_t *buff, size_t packetSize_, std::string
 	std::cout << "Receiving message with type: " << header.packetType << std::endl;
 
 	// check CRC
-	const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), packetSize_ - sizeof(uint32_t));
+	const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
 	if (CRC != header.crc) {
 		std::cout << "ERROR: bad CRC" << std::endl;
 		return false;

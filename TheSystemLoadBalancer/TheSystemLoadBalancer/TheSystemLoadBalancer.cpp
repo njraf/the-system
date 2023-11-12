@@ -201,7 +201,8 @@ int main() {
 
 			uint8_t buff[MTU];
 			memset(buff, 0, sizeof(buff));
-			if (SOCKET_ERROR == recvfrom(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr*)&from, &fromlen)) {
+			const int bytesRead = recvfrom(clientSocket, (char *)buff, sizeof(buff), 0, (struct sockaddr *)&from, &fromlen);
+			if (SOCKET_ERROR == bytesRead) {
 				std::cout << "Failed to receive client packet" << std::endl;
 				printErrorText();
 				continue;
@@ -220,7 +221,7 @@ int main() {
 
 			ServerConnection *selectedServer = (*minIt);
 			
-			if (!selectedServer->sendPacket(buff, sizeof(buff))) {
+			if (!selectedServer->sendPacket(buff, bytesRead)) {
 				std::cout << "Warning: Failed to send to server" << std::endl;
 			}
 		} else {
@@ -263,12 +264,12 @@ int main() {
 						break;
 					}
 
-					int bytesWrote = sendto(clientSocket, (char*)buff, sizeof(buff), 0, (struct sockaddr *)&addr, sizeof(addr));
+					int bytesWrote = sendto(clientSocket, (char*)buff, bytesRead, 0, (struct sockaddr *)&addr, sizeof(addr));
 					if (SOCKET_ERROR == bytesWrote) {
 						std::cout << "Failed to send client packet" << std::endl;
 						continue;
 					}
-					printf("Bytes wrote %d to IP %s\n", bytesWrote, clientIP);
+					printf("Bytes written %d to IP %s\n", bytesWrote, clientIP);
 
 				} // if (FD_ISSET(s->getSocket(), &readSet))
 			} // foreach (server socket)

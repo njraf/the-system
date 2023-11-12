@@ -42,7 +42,7 @@ uint32_t SessionsDAO::createSession(std::string username_) const {
 
 		// get current time
 		time_t now = time(0);
-		struct tm *tstruct;
+		struct tm *tstruct = nullptr;
 #ifdef _WIN32
 		localtime_s(tstruct, &now);
 #else

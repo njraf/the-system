@@ -45,7 +45,7 @@ bool ServerConnection::sendPacket(uint8_t *buff, int len) {
 int ServerConnection::recvPacket(uint8_t *buff, int len) const {
 	activeRequests--;
 	int bytesRead = recv(sock, (char*)buff, len, 0);
-	if (-1 == bytesRead) {
+	if (SOCKET_ERROR == bytesRead) {
 		std::cout << "Failed to read from a server" << std::endl;
 	} else if (0 == bytesRead) {
 		std::cout << "Server disconnected" << std::endl;

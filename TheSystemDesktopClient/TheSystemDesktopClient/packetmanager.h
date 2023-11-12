@@ -13,10 +13,10 @@
 #define BSD // uncomment to use Qt sockets (if I get it working)
 
 typedef struct {
+    uint32_t crc;
     char ipAddress[16];
     char packetType[4];
     uint32_t sessionID;
-    uint32_t crc;
 } PacketHeader;
 
 class PacketManager : public QThread
@@ -58,7 +58,7 @@ private:
     volatile bool isRunning = true;
     uint32_t sessionID;
 
-    void packHeader(uint8_t *buff, std::string type) const; // NOTE: call at the end of each pack function for accurate CRC value
+    void packHeader(uint8_t *buff, size_t packetSize_, std::string type) const; // NOTE: call at the end of each pack function for accurate CRC value
     bool unpackHeader(uint8_t *buff, PacketHeader &header);
 
 

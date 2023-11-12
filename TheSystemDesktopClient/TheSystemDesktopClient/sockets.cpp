@@ -58,4 +58,5 @@ int makeSockaddr(struct sockaddr_in &addr, ADDRESS_FAMILY family, const char *ad
     //return inet_pton(family, address, &(addr.sin_addr.s_addr));
 
     addr.sin_addr.s_addr = inet_addr(address);
+    return addr.sin_addr.s_addr;
 }

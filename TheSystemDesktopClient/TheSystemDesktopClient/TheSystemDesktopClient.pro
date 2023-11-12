@@ -41,6 +41,7 @@ FORMS += \
     signuppage.ui
 
 win32: LIBS += -lws2_32
+LIBS += -lz
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
