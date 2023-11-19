@@ -208,6 +208,9 @@ int main() {
 				continue;
 			}
 
+			uint32_t crc = 0;
+			memcpy(&crc, buff, 4);
+
 			// determine which server to send to
 			if (serverSockets.empty()) {
 				std::cout << "Received client request, but there are no active servers to send to" << std::endl;
@@ -249,7 +252,7 @@ int main() {
 
 					// send response to client
 					char clientIP[16] = "";
-					memcpy(clientIP, buff + sizeof(uint32_t), 16);
+					memcpy(clientIP, buff + sizeof(uint32_t), sizeof(clientIP));
 
 					struct sockaddr_in addr;
 					switch (makeSockaddr(addr, AF_INET, clientIP, RESPONSE_TX_PORT)) {

@@ -24,13 +24,16 @@ void printHex(uint8_t *buff, size_t size) {
 void unpackHeader(uint8_t *buff, size_t packetSize_, PacketHeader &header) {
     // check packet type
     uint8_t *buffPtr = buff;
-    header.crc = ntohl(*buffPtr);
+    uint32_t val32 = 0;
+    memcpy(&val32, buffPtr, sizeof(header.crc));
+    header.crc = ntohl(val32);
     buffPtr += sizeof(header.crc);
     memcpy(header.clientIP, buffPtr, sizeof(header.clientIP));
     buffPtr += sizeof(header.clientIP);
     memcpy(header.packetType, buffPtr, sizeof(header.packetType));
     buffPtr += sizeof(header.packetType);
-    header.sessionID = ntohl(*buffPtr);
+    memcpy(&val32, buffPtr, sizeof(header.sessionID));
+    header.sessionID = ntohl(val32);
     buffPtr += sizeof(header.sessionID);
 }
 
@@ -59,13 +62,13 @@ void unpackSignUpPacket(uint8_t *buff, SignUpPacket &packet) {
 
 void packHeader(uint8_t *buff, size_t packetSize_, const PacketHeader &header) {
     uint8_t *buffPtr = buff;
-    buffPtr += sizeof(uint32_t); // skip crc32
+    buffPtr += sizeof(header.crc); // skip crc32
     memcpy(buffPtr, header.clientIP, sizeof(header.clientIP));
-    buffPtr += 16;
+    buffPtr += sizeof(header.clientIP);
     memcpy(buffPtr, header.packetType, sizeof(header.packetType));
     buffPtr += sizeof(header.packetType);
     uint32_t val32 = htonl(header.sessionID);
-    memcpy(buffPtr, &val32, sizeof(val32));
+    memcpy(buffPtr, &val32, sizeof(header.sessionID));
     buffPtr += sizeof(val32);
 
     const uint32_t CRC = crc32(0, (Bytef *)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
@@ -76,7 +79,7 @@ void packHeader(uint8_t *buff, size_t packetSize_, const PacketHeader &header) {
 void packResultPacket(uint8_t *buff, const ResultPacket &packet) {
     uint8_t *buffPtr = buff + sizeof(PacketHeader);
     uint32_t val32 = htonl(packet.success);
-    memcpy(buffPtr, &val32, sizeof(val32));
+    memcpy(buffPtr, &val32, sizeof(packet.success));
     buffPtr += sizeof(packet.success);
     memcpy(buffPtr, packet.message, sizeof(packet.message));
 }

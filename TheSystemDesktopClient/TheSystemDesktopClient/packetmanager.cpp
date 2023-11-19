@@ -118,8 +118,8 @@ void PacketManager::run() {
 
         uint8_t buff[MTU];
         memset(buff, 0, MTU);
-        int bytesRead = recv(sock, (char*)buff, MTU, 0);
-        if (-1 == bytesRead) {
+        const int bytesRead = recv(sock, (char*)buff, MTU, 0);
+        if (SOCKET_ERROR == bytesRead) {
             qDebug() << "Read error";
             errno = 0;
             continue;
@@ -128,6 +128,8 @@ void PacketManager::run() {
         PacketHeader packetHeader;
         unpackHeader(buff, packetHeader);
         if (!verifyHeader(packetHeader, buff, bytesRead)) {
+            QString msg = "ERROR: Bad packet";
+            emit receivedResult(false, msg);
             continue;
         }
         uint8_t *packetPtr = buff + 16;
@@ -135,13 +137,6 @@ void PacketManager::run() {
         memcpy(packetType, packetHeader.packetType, 4);
         packetType[4] = '\0';
         if ("RSLT" == QString(packetType)) {
-            constexpr size_t PACKET_SIZE = HEADER_SIZE + 68;
-            // check crc
-            const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(PACKET_SIZE - sizeof(uint32_t)));
-            if (CRC != packetHeader.crc) {
-                qDebug() << "ERROR: bad CRC";
-            }
-
             packetPtr = buff + 28;
             uint32_t val32 = 0;
             memcpy(&val32, packetPtr, sizeof(uint32_t));
@@ -163,7 +158,7 @@ void PacketManager::stop() {
 
 bool PacketManager::verifyHeader(const PacketHeader &header, uint8_t *buff, size_t packetSize_) {
     // check CRC
-    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(header.crc)), (uInt)(packetSize_ - sizeof(header.crc)));
+    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
     if (CRC != header.crc) {
         qDebug() << "ERROR: Bad CRC";
         return false;
@@ -207,10 +202,10 @@ void PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
     memcpy(&val32, buffPtr, sizeof(uint32_t));
     header.crc = ntohl(val32);
     buffPtr += sizeof(uint32_t);
-    memcpy(header.ipAddress, buffPtr, 16);
-    buffPtr += 16;
-    memcpy(header.packetType, buffPtr, 4);
-    buffPtr += 4;
+    memcpy(header.ipAddress, buffPtr, sizeof(header.ipAddress));
+    buffPtr += sizeof(header.ipAddress);
+    memcpy(header.packetType, buffPtr, sizeof(header.packetType));
+    buffPtr += sizeof(header.packetType);
     memcpy(&val32, buffPtr, sizeof(uint32_t));
     header.sessionID = ntohl(val32);
     buffPtr += sizeof(uint32_t);
@@ -260,7 +255,7 @@ void PacketManager::sendSignUpPacket(QString username, QString password, QString
     // send
     int bytesWrote = sendto(sock, (char*)packet, packetPtr - packet, 0, (struct sockaddr*)&requestAddr, sizeof(requestAddr));
     qDebug() << "Bytes wrote" << bytesWrote;
-    if (-1 == bytesWrote) {
+    if (SOCKET_ERROR == bytesWrote) {
         qDebug() << "Send error";
         errno = 0;
     }

@@ -41,8 +41,8 @@ bool RequestHandler::verifyHeader(uint8_t *buff, size_t packetSize_, std::string
 
 void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	PacketHeader header;
-	const size_t PACKET_SIZE = sizeof(PacketHeader) + sizeof(SignInPacket);
-	unpackHeader(buff, PACKET_SIZE, header);
+	const size_t SIGN_IN_PACKET_SIZE = sizeof(PacketHeader) + sizeof(SignInPacket);
+	unpackHeader(buff, SIGN_IN_PACKET_SIZE, header);
 
 	SignInPacket packet;
 	unpackSignInPacket(buff, packet);
@@ -71,16 +71,18 @@ void RequestHandler::resolveSignIn(uint8_t *buff, socket_t sock) {
 	memcpy(header.packetType, "RSLT", sizeof(header.packetType));
 
 	// set result message
+	memset(resultPacket.message, 0, sizeof(resultPacket.message));
 	strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
 
 	// create success/fail result packet
+	const size_t RESULT_PACKET_SIZE = sizeof(PacketHeader) + sizeof(ResultPacket);
 	uint8_t responseBuff[MTU];
 	memset(responseBuff, 0, sizeof(responseBuff));
 	packResultPacket(responseBuff, resultPacket);
-	packHeader(responseBuff, PACKET_SIZE, header);
+	packHeader(responseBuff, RESULT_PACKET_SIZE, header);
 
 	// send response
-	send(sock, (char *)responseBuff, sizeof(PacketHeader) + sizeof(ResultPacket), 0);
+	send(sock, (char *)responseBuff, RESULT_PACKET_SIZE, 0);
 }
 
 void RequestHandler::resolveSignUp(uint8_t *buff, socket_t sock) {

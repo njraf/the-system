@@ -42,9 +42,9 @@ uint32_t SessionsDAO::createSession(std::string username_) const {
 
 		// get current time
 		time_t now = time(0);
-		struct tm *tstruct = nullptr;
+		struct tm tstruct;
 #ifdef _WIN32
-		localtime_s(tstruct, &now);
+		localtime_s(&tstruct, &now);
 #else
 #ifdef __STDC_LIB_EXT1__
 		localtime_s(&now, tstruct);
@@ -53,7 +53,7 @@ uint32_t SessionsDAO::createSession(std::string username_) const {
 #endif
 #endif
 		char timeBuff[80];
-		strftime(timeBuff, sizeof(timeBuff), "%Y-%m-%d %X", tstruct);
+		strftime(timeBuff, sizeof(timeBuff), "%Y-%m-%d %X", &tstruct);
 
 		// create the new session
 		databaseManager->query("sessions")->insert({std::to_string(userID), std::string(timeBuff)}, {"user_id", "creation_datetime"})->execute();

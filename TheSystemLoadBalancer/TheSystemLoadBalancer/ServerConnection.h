@@ -14,8 +14,8 @@ public:
 	int getActiveRequests() const;
 	void invalidateSocket();
 	
-	bool sendPacket(uint8_t *buff, int len);
-	int recvPacket(uint8_t *buff, int len) const;
+	bool sendPacket(uint8_t *buff, int len); // to server only
+	int recvPacket(uint8_t *buff, int len) const; // from server only
 
 private:
 	socket_t sock;

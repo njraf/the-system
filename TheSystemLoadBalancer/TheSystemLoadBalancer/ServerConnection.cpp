@@ -32,7 +32,7 @@ void ServerConnection::invalidateSocket() {
 
 bool ServerConnection::sendPacket(uint8_t *buff, int len) {
 	int bytesWrote = send(sock, (char*)buff, len, 0);
-	if (-1 == bytesWrote) {
+	if (SOCKET_ERROR == bytesWrote) {
 		errno = 0;
 		return false;
 	}
@@ -51,7 +51,9 @@ int ServerConnection::recvPacket(uint8_t *buff, int len) const {
 		std::cout << "Server disconnected" << std::endl;
 		bytesRead = SOCKET_ERROR;
 	} else {
-		std::cout << "Server message: " << buff << std::endl;
+		char message[64] = "";
+		memcpy(message, buff + 32, 64);
+		//std::cout << "Server message: " << message << std::endl;
 	}
 	return bytesRead;
 }
