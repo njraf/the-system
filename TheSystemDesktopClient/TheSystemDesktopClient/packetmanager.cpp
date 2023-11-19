@@ -126,7 +126,8 @@ void PacketManager::run() {
         }
 
         PacketHeader packetHeader;
-        if (!unpackHeader(buff, packetHeader)) {
+        unpackHeader(buff, packetHeader);
+        if (!verifyHeader(packetHeader, buff, bytesRead)) {
             continue;
         }
         uint8_t *packetPtr = buff + 16;
@@ -160,8 +161,33 @@ void PacketManager::stop() {
     isRunning = false;
 }
 
+bool PacketManager::verifyHeader(const PacketHeader &header, uint8_t *buff, size_t packetSize_) {
+    // check CRC
+    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(header.crc)), (uInt)(packetSize_ - sizeof(header.crc)));
+    if (CRC != header.crc) {
+        qDebug() << "ERROR: Bad CRC";
+        return false;
+    }
+
+    // check that the header IP address matches the one we sent
+    if (QString(header.ipAddress) != desktopClientHost.toString()) {
+        qDebug() << "ERROR: The returned IP address of the received packet is different than our own";
+        return false;
+    }
+
+    // check that we recieved the correct session ID
+    if (0 == sessionID) {
+        sessionID = header.sessionID;
+    } else if (header.sessionID != sessionID) {
+        qDebug() << "ERROR: Packet with bad session ID received";
+        return false;
+    }
+
+    return true;
+}
+
 void PacketManager::packHeader(uint8_t *buff, size_t packetSize_, std::string type) const {
-    uint8_t *buffPtr = buff;
+    uint8_t *buffPtr = buff + 4;
     memcpy(buffPtr, desktopClientHost.toString().toStdString().c_str(), 16);
     buffPtr += 16;
     memcpy(buffPtr, type.c_str(), 4);
@@ -173,10 +199,9 @@ void PacketManager::packHeader(uint8_t *buff, size_t packetSize_, std::string ty
     val32 = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
     val32 = htonl(val32);
     memcpy(buff, &val32, sizeof(uint32_t));
-    buffPtr += sizeof(uint32_t);
 }
 
-bool PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
+void PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
     uint8_t *buffPtr = buff;
     uint32_t val32 = 0;
     memcpy(&val32, buffPtr, sizeof(uint32_t));
@@ -189,21 +214,6 @@ bool PacketManager::unpackHeader(uint8_t *buff, PacketHeader &header) {
     memcpy(&val32, buffPtr, sizeof(uint32_t));
     header.sessionID = ntohl(val32);
     buffPtr += sizeof(uint32_t);
-
-    // check that we recieved the correct session ID
-    if (0 == sessionID) {
-        sessionID = header.sessionID;
-    } else if (header.sessionID != sessionID) {
-        qDebug() << "ERROR: Packet with bad session ID received";
-        return false;
-    }
-
-    // check that the header IP address matches the one we sent
-    if (QString(header.ipAddress) != desktopClientHost.toString()) {
-        qDebug() << "ERROR: The returned IP address of the received packet is different than our own";
-        return false;
-    }
-    return true;
 }
 
 void PacketManager::sendSignInPacket(QString username, QString password) const {

@@ -210,11 +210,12 @@ int main() {
             const size_t PACKET_SIZE = sizeof(PacketHeader) + sizeof(ResultPacket);
             PacketHeader header;
             unpackHeader(buff, 0, header);
-            strncpy_s(header.packetType, 4, "RSLT", 4);
+            memcpy(header.packetType, "RSLT", 4);
 
             ResultPacket resultPacket;
             std::string msg = "ERROR: Bad packet";
-            strncpy_s(resultPacket.message, sizeof(resultPacket.message), msg.c_str(), msg.length());
+            memset(resultPacket.message, 0, sizeof(resultPacket.message));
+            memcpy(resultPacket.message, msg.c_str(), msg.length());
             resultPacket.success = false;
 
             uint8_t responseBuff[MTU];

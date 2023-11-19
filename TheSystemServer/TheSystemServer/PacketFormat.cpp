@@ -25,16 +25,13 @@ void unpackHeader(uint8_t *buff, size_t packetSize_, PacketHeader &header) {
     // check packet type
     uint8_t *buffPtr = buff;
     header.crc = ntohl(*buffPtr);
-    buffPtr += 4;
+    buffPtr += sizeof(header.crc);
     memcpy(header.clientIP, buffPtr, sizeof(header.clientIP));
-    buffPtr += 16;
+    buffPtr += sizeof(header.clientIP);
     memcpy(header.packetType, buffPtr, sizeof(header.packetType));
     buffPtr += sizeof(header.packetType);
     header.sessionID = ntohl(*buffPtr);
-    buffPtr += 4;
-
-    const uint32_t CRC = crc32(0, (Bytef*)(buff + sizeof(uint32_t)), (uInt)(packetSize_ - sizeof(uint32_t)));
-    header.crc = ntohl(CRC);
+    buffPtr += sizeof(header.sessionID);
 }
 
 void unpackSignInPacket(uint8_t *buff, SignInPacket &packet) {

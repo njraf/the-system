@@ -249,7 +249,7 @@ int main() {
 
 					// send response to client
 					char clientIP[16] = "";
-					memcpy(clientIP, buff, 16);
+					memcpy(clientIP, buff + sizeof(uint32_t), 16);
 
 					struct sockaddr_in addr;
 					switch (makeSockaddr(addr, AF_INET, clientIP, RESPONSE_TX_PORT)) {

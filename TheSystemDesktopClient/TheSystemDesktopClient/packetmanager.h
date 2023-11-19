@@ -58,8 +58,9 @@ private:
     volatile bool isRunning = true;
     uint32_t sessionID;
 
+    bool verifyHeader(const PacketHeader &header, uint8_t *buff, size_t packetSize_);
     void packHeader(uint8_t *buff, size_t packetSize_, std::string type) const; // NOTE: call at the end of each pack function for accurate CRC value
-    bool unpackHeader(uint8_t *buff, PacketHeader &header);
+    void unpackHeader(uint8_t *buff, PacketHeader &header);
 
 
 signals:
