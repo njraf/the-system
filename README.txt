@@ -20,6 +20,7 @@ Dependencies:
 	- WARNING: make sure no other databases have the name "the_system" so they are not overwritten
 
 [Server]
+- Requires zlib to be dynamically linked for crc32 checksum
 - Create a MySQL database using the provided sql dump as mentioned in the [MySQL] dependency
 - MySQL connector/c++ 8.1.0
 	- https://dev.mysql.com/downloads/connector/cpp/
@@ -39,7 +40,6 @@ Dependencies:
 - uses c++11 features
 
 [Qt client]
+- Requires zlib to be dynamically linked for crc32 checksum
 - uses c++11 features
 
-Limitations:
-- The Qt client currently only works on Linux and will be cross platform in the future

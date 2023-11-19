@@ -7,10 +7,10 @@ The header attached to the start of every packet.
 
 Field | type[bytes]
 -------------------
-Client IP | string[16]
+CRC 		| uint[4]
+Client IP   | string[16]
 Packet type | string[4]
-Session ID | int[4]
-CRC | int[4]
+Session ID  | uint[4]
 
 =====================================
 
@@ -20,7 +20,7 @@ If the clients sends a request and expects a response, but the server failed to 
 
 Field | type[bytes]
 -------------------
-result | int[4] // 0 for failed, 1 for success
+result  | uint[4] // 0 for failed, 1 for success
 message | string[64]
 
 =====================================
@@ -30,12 +30,10 @@ The client requests the server create an account.
 
 Field | type[bytes]
 -------------------
-username | string[64]
-password | string[64]
-email | string[64]
-first name | string[[64]
-last name | string[64]
-age | int[4]
+username   | string[64]
+password   | string[64]
+first name | string[64]
+last name  | string[64]
 
 =====================================
 
